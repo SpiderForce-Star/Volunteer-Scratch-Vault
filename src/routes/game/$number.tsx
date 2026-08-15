@@ -16,8 +16,7 @@ function GameDetail() {
   const heat = scoreGame(game);
 
   return (
-    <div className="min-h-svh bg-bg text-fg">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/"
           className="inline-flex min-h-11 items-center gap-2 text-sm text-muted hover:text-fg"
@@ -100,13 +99,13 @@ function GameDetail() {
           </ul>
         </section>
 
-        <p className="mt-10 text-sm leading-relaxed text-faint">
+        <p className="mt-10 pb-10 text-sm leading-relaxed text-faint">
           Independent analysis only. Not affiliated with the Tennessee Lottery.
           Remaining prizes change as tickets sell. One top prize per game may
           be held for Play It Again. This does not change lottery outcomes.
+          18+ only. If gambling is a problem, call 1-800-GAMBLER.
         </p>
       </div>
-    </div>
   );
 }
 

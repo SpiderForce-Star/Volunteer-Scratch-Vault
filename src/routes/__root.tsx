@@ -1,6 +1,8 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Volunteer Scratch Vault";
@@ -43,7 +45,11 @@ export const Route = createRootRoute({
       <body>
         <PreviewHostBridge />
         <AuthProvider>
-          <Outlet />
+          <div className="min-h-svh bg-bg text-fg">
+            <SiteHeader />
+            <Outlet />
+            <SiteFooter />
+          </div>
         </AuthProvider>
         <Scripts />
       </body>
