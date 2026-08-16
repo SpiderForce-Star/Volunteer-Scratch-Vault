@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as GameNumberRouteImport } from './routes/game/$number'
+import { Route as BillingSuccessRouteImport } from './routes/billing/success'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +25,58 @@ const DisclaimerRoute = DisclaimerRouteImport.update({
   path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GameNumberRoute = GameNumberRouteImport.update({
   id: '/game/$number',
   path: '/game/$number',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingSuccessRoute = BillingSuccessRouteImport.update({
+  id: '/billing/success',
+  path: '/billing/success',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/pricing': typeof PricingRoute
   '/game/$number': typeof GameNumberRoute
+  '/billing/success': typeof BillingSuccessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/pricing': typeof PricingRoute
   '/game/$number': typeof GameNumberRoute
+  '/billing/success': typeof BillingSuccessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/pricing': typeof PricingRoute
   '/game/$number': typeof GameNumberRoute
+  '/billing/success': typeof BillingSuccessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/disclaimer' | '/game/$number'
+  fullPaths: '/' | '/disclaimer' | '/pricing' | '/game/$number' | '/billing/success'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/disclaimer' | '/game/$number'
-  id: '__root__' | '/' | '/disclaimer' | '/game/$number'
+  to: '/' | '/disclaimer' | '/pricing' | '/game/$number' | '/billing/success'
+  id: '__root__' | '/' | '/disclaimer' | '/pricing' | '/game/$number' | '/billing/success'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DisclaimerRoute: typeof DisclaimerRoute
+  PricingRoute: typeof PricingRoute
   GameNumberRoute: typeof GameNumberRoute
+  BillingSuccessRoute: typeof BillingSuccessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +95,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/game/$number': {
       id: '/game/$number'
       path: '/game/$number'
       fullPath: '/game/$number'
       preLoaderRoute: typeof GameNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/success': {
+      id: '/billing/success'
+      path: '/billing/success'
+      fullPath: '/billing/success'
+      preLoaderRoute: typeof BillingSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +122,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DisclaimerRoute: DisclaimerRoute,
+  PricingRoute: PricingRoute,
   GameNumberRoute: GameNumberRoute,
+  BillingSuccessRoute: BillingSuccessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
