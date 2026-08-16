@@ -39,3 +39,7 @@ Products: `monthly`, `annual`
 ## Privacy
 
 https://volunteer-scratch-vault.vercel.app/privacy
+
+## Terms
+
+https://volunteer-scratch-vault.vercel.app/terms

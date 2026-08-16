@@ -83,7 +83,15 @@ function LoginPage() {
         <Link to="/pricing" className="underline underline-offset-2 hover:text-fg">
           See pricing
         </Link>
-        . 18+ only.
+        . 18+ only.{" "}
+        <Link to="/terms" className="underline underline-offset-2 hover:text-fg">
+          Terms
+        </Link>
+        {" · "}
+        <Link to="/privacy" className="underline underline-offset-2 hover:text-fg">
+          Privacy
+        </Link>
+        .
       </p>
     </div>
   );

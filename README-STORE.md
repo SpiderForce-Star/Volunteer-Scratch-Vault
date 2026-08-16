@@ -57,6 +57,7 @@ You click these. The agent does not.
    - User access: Full Access
 4. Fill **App Privacy**:
    - Privacy Policy URL: `https://volunteer-scratch-vault.vercel.app/privacy`
+   - Terms of Use URL: `https://volunteer-scratch-vault.vercel.app/terms`
    - Data: email + product interaction (subscription status). No precise location, no tracking.
 5. Age rating: 18+ / Gambling (simulated / informational — be honest; this discusses lottery prizes).
 6. Upload later: `store/ios/icon-1024.png` and the 6.7" / 6.1" placeholders in `store/ios/screenshots/`.
@@ -84,6 +85,7 @@ You click these.
    - Short description: Independent Tennessee scratch-off remaining-prize desk. 18+.
    - Full description: say “highest remaining-prize heat,” never “best chance to win.”
    - Privacy policy: `https://volunteer-scratch-vault.vercel.app/privacy`
+   - Terms: `https://volunteer-scratch-vault.vercel.app/terms`
 5. Graphics: `store/android/icon-512.png` and `store/android/screenshots/`.
 6. Content rating questionnaire: 18+, references to gambling.
 7. Create two subscriptions in Play Console (same product ids):

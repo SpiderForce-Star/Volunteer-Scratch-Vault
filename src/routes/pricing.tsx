@@ -184,6 +184,21 @@ function PricingPage() {
         <p className="mt-6 text-center text-sm text-bust">{error}</p>
       )}
 
+      <p className="mx-auto mt-8 max-w-md text-center text-xs leading-relaxed text-faint">
+        By starting a trial you agree to the{" "}
+        <Link to="/terms" className="underline underline-offset-2 hover:text-fg">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link
+          to="/privacy"
+          className="underline underline-offset-2 hover:text-fg"
+        >
+          Privacy Policy
+        </Link>
+        . 18+ only.
+      </p>
+
       {native ? (
         <button
           type="button"

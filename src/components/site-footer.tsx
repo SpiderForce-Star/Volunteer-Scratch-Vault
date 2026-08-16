@@ -41,6 +41,12 @@ export function SiteFooter() {
                 Privacy
               </Link>
               <Link
+                to="/terms"
+                className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+              >
+                Terms
+              </Link>
+              <Link
                 to="/pricing"
                 className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
               >

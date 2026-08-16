@@ -132,6 +132,13 @@ function PrivacyPage() {
         </Link>
         {" · "}
         <Link
+          to="/terms"
+          className="underline underline-offset-2 hover:text-fg"
+        >
+          Terms
+        </Link>
+        {" · "}
+        <Link
           to="/disclaimer"
           className="underline underline-offset-2 hover:text-fg"
         >

@@ -8,6 +8,7 @@ Paste-ready for App Store Connect and Google Play.
 | Do not use | Games, Casino, Lottery operator |
 | Age | 18+ |
 | Privacy | https://volunteer-scratch-vault.vercel.app/privacy |
+| Terms | https://volunteer-scratch-vault.vercel.app/terms |
 
 ---
 

@@ -31,6 +31,20 @@ function DisclaimerPage() {
         <Link to="/" className="underline underline-offset-2 hover:text-fg">
           Back to the vault
         </Link>
+        {" · "}
+        <Link
+          to="/terms"
+          className="underline underline-offset-2 hover:text-fg"
+        >
+          Terms
+        </Link>
+        {" · "}
+        <Link
+          to="/privacy"
+          className="underline underline-offset-2 hover:text-fg"
+        >
+          Privacy
+        </Link>
       </p>
     </article>
   );
