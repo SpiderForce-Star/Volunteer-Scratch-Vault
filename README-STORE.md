@@ -10,7 +10,8 @@ Bundle id / application id: `com.webbspinnervisions.volunteerscratchvault`
 This product is an **independent remaining-prize information tool**.
 It is not a lottery, not a ticket seller, and not affiliated with the
 Tennessee Education Lottery Corporation. Unlocking Full Access **inside**
-iOS/Android must use native IAP (next prompt). Stripe stays on the website.
+iOS/Android uses RevenueCat + StoreKit / Play Billing. Stripe stays on
+the website only.
 
 ---
 
@@ -59,7 +60,11 @@ You click these. The agent does not.
    - Data: email + product interaction (subscription status). No precise location, no tracking.
 5. Age rating: 18+ / Gambling (simulated / informational — be honest; this discusses lottery prizes).
 6. Upload later: `store/ios/icon-1024.png` and the 6.7" / 6.1" placeholders in `store/ios/screenshots/`.
-7. **Do not** submit for review yet. IAP products come in the next prompt.
+7. Create two auto-renewable subscriptions (In-App Purchases):
+   - Product id `monthly` — $4.99 / month — introductory offer: free trial (7 or 30 days)
+   - Product id `annual` — $49.99 / year — same introductory trial
+8. Paste reviewer notes from `store/APP_REVIEW_NOTES.md`.
+9. **Do not** submit until RevenueCat products are attached (section 6).
 
 ---
 
@@ -81,7 +86,10 @@ You click these.
    - Privacy policy: `https://volunteer-scratch-vault.vercel.app/privacy`
 5. Graphics: `store/android/icon-512.png` and `store/android/screenshots/`.
 6. Content rating questionnaire: 18+, references to gambling.
-7. **Do not** send for review yet. Play Billing products come in the next prompt.
+7. Create two subscriptions in Play Console (same product ids):
+   - `monthly` — $4.99 / month — free trial offer
+   - `annual` — $49.99 / year — free trial offer
+8. **Do not** send for review until RevenueCat is linked (section 6).
 
 ---
 
@@ -135,8 +143,8 @@ npx cap run android
 | App Store Connect app record + privacy form | You |
 | Play Console app record + content rating | You |
 | `eas login` / `eas init` / `eas credentials` | You |
-| App Store / Play IAP product setup | Next prompt + you |
-| RevenueCat project + API keys (env, not git) | Next prompt + you |
+| App Store / Play IAP product setup | You |
+| RevenueCat project + public SDK keys in Vercel / EAS env | You |
 | Actual submit for review | You, later |
 
 Never put Stripe keys, RevenueCat keys, or store shared secrets in this repo.
@@ -164,3 +172,24 @@ Regenerate rasters (needs Python + Pillow):
 ```bash
 python scripts/generate-store-assets.py
 ```
+
+---
+
+## 6. RevenueCat (you click)
+
+1. Create a project at [app.revenuecat.com](https://app.revenuecat.com).
+2. Add iOS app (bundle `com.webbspinnervisions.volunteerscratchvault`) and
+   Android app (same application id). Paste the App Store Connect / Play
+   shared secrets there — never into this git repo.
+3. Products:
+   - `monthly` — $4.99 / month
+   - `annual` — $49.99 / year
+4. Entitlement: `vsv_full_access` — attach both products.
+5. Default offering: include both packages (Monthly / Annual).
+6. Copy the **public** SDK keys (`appl_…` and `goog_…`) into:
+   - Vercel Production: `VITE_REVENUECAT_APPLE_API_KEY`, `VITE_REVENUECAT_GOOGLE_API_KEY`
+   - EAS secrets / `eas.json` env for store builds
+7. Reviewer notes: `store/APP_REVIEW_NOTES.md`
+
+The website continues to use Stripe Checkout. The iOS/Android binaries never
+open Stripe or a “pay on our website” link.
