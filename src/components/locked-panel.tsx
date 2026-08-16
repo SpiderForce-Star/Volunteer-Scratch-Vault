@@ -34,13 +34,18 @@ export function LockedPanel({
 }) {
   return (
     <div className="relative overflow-hidden rounded-lg border border-line">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none select-none blur-[3px]"
-      >
+      <div aria-hidden="true" className="pointer-events-none select-none opacity-40">
         {children}
       </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg/70 px-4 text-center backdrop-blur-[1px]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <span className="-rotate-24 font-display text-5xl tracking-[0.28em] text-gold/20">
+          VAULT
+        </span>
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg/55 px-4 text-center">
         <Lock className="size-5 text-warm" aria-hidden="true" />
         <div>
           <p className="font-display text-lg text-fg">{title}</p>

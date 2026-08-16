@@ -57,6 +57,15 @@ export function SiteFooter() {
           or someone you know may have a gambling problem, help is available
           24/7.
         </p>
+
+        <a
+          href="https://webbspinnervisions.net"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center font-mono text-[10px] tracking-[0.18em] text-faint uppercase hover:text-gold"
+        >
+          Built by Webb Spinner Visions
+        </a>
       </div>
     </footer>
   );

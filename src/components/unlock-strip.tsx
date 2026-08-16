@@ -1,0 +1,139 @@
+import { Link } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
+import { GAMES } from "@/data/games";
+import { catalogHeat } from "@/lib/heat";
+import { cn } from "@/lib/utils";
+
+export function UnlockStrip({ locked = true }: { locked?: boolean }) {
+  const heat = catalogHeat(GAMES);
+
+  return (
+    <section className="border-b border-line bg-raised/40">
+      <div className="mx-auto flex max-w-[1120px] flex-col gap-6 px-4 py-8 sm:px-6">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <GaugeCard
+            label="Grand heat"
+            value={heat.grand}
+            note="Retail jackpots still posted after Play It Again"
+            locked={locked}
+            tone="gold"
+          />
+          <GaugeCard
+            label="Medium heat"
+            value={heat.medium}
+            note="Mid-tier remaining across the catalog"
+            locked={locked}
+            tone="sage"
+          />
+          <BustCard busts={heat.busts} locked={locked} />
+        </div>
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-xl text-sm leading-relaxed text-muted">
+            Unlock the full ranking — 1 month free, then $4.99/mo or $49.99/yr
+          </p>
+          <Link
+            to="/pricing"
+            className="inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg"
+          >
+            Start 1-month free trial
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GaugeCard({
+  label,
+  value,
+  note,
+  locked,
+  tone,
+}: {
+  label: string;
+  value: number;
+  note: string;
+  locked: boolean;
+  tone: "gold" | "sage";
+}) {
+  const color = tone === "gold" ? "#c4a574" : "#7c9a72";
+  const angle = -120 + (Math.max(0, Math.min(100, value)) / 100) * 240;
+  const rad = ((angle - 90) * Math.PI) / 180;
+  const nx = 50 + Math.cos(rad) * 28;
+  const ny = 52 + Math.sin(rad) * 28;
+
+  return (
+    <article className="relative overflow-hidden rounded-lg border border-line bg-bg p-4">
+      {locked ? <LockMark /> : null}
+      <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
+        {label}
+      </p>
+      <svg viewBox="0 0 100 70" className="mt-2 h-20 w-full" aria-hidden="true">
+        <path
+          d="M18 58 A 34 34 0 1 1 82 58"
+          fill="none"
+          stroke="#2a332c"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <path
+          d="M18 58 A 34 34 0 1 1 82 58"
+          fill="none"
+          stroke={color}
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray="120"
+          strokeDashoffset={120 - (value / 100) * 120}
+        />
+        <line
+          x1="50"
+          y1="52"
+          x2={nx}
+          y2={ny}
+          stroke={color}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <circle cx="50" cy="52" r="2.4" fill={color} />
+      </svg>
+      <p className="font-display text-2xl tabular-nums">{Math.round(value)}</p>
+      <p className="mt-1 text-xs leading-relaxed text-faint">{note}</p>
+    </article>
+  );
+}
+
+function BustCard({ busts, locked }: { busts: number; locked: boolean }) {
+  return (
+    <article className="relative overflow-hidden rounded-lg border border-line bg-bg p-4">
+      {locked ? <LockMark /> : null}
+      <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
+        Bust filter
+      </p>
+      <div className="relative mt-3 h-20">
+        <div className="absolute inset-x-4 top-2 h-14 rounded-sm border border-line bg-raised/80" />
+        <div className="absolute inset-x-8 top-5 h-8 rounded-sm border border-line/80 bg-bg" />
+        <span
+          className={cn(
+            "absolute top-6 left-1/2 -translate-x-1/2 -rotate-12",
+            "border-2 border-danger px-3 py-1 font-mono text-sm tracking-[0.18em] text-danger uppercase",
+          )}
+        >
+          Skip
+        </span>
+      </div>
+      <p className="font-display text-2xl tabular-nums">{busts}</p>
+      <p className="mt-1 text-xs leading-relaxed text-faint">
+        Games the desk flags to walk past. Not a guarantee.
+      </p>
+    </article>
+  );
+}
+
+function LockMark() {
+  return (
+    <Lock
+      className="absolute top-3 right-3 size-4 text-gold/70"
+      aria-hidden="true"
+    />
+  );
+}

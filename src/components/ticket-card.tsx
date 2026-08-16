@@ -30,6 +30,9 @@ export function TicketCard({
       <div className="relative overflow-hidden">
         <TicketFace game={game} />
         <BandChip band={heat.band} className="absolute top-3 right-3 z-10" />
+        <span className="absolute top-3 left-3 z-10 rounded-sm border border-gold/50 bg-bg/80 px-2 py-1 font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
+          Heat {Math.round(heat.vault)}
+        </span>
       </div>
 
       <div className="flex flex-col gap-3 p-4">
