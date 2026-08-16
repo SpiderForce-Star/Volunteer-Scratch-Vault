@@ -5,6 +5,7 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AgeGate } from "@/components/age-gate";
+import { InstallCoach } from "@/components/install-coach";
 import { initNativeChrome } from "@/lib/native";
 import { configureIap } from "@/lib/iap";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
@@ -33,10 +34,10 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/pwa-192.png" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap",
@@ -75,6 +76,7 @@ function NativeRoot() {
   return (
     <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">
       <SiteHeader />
+      <InstallCoach />
       <Outlet />
       <SiteFooter />
       <AgeGate />
