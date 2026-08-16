@@ -53,6 +53,12 @@ function PrivacyPage() {
             price filter. Hosting logs (IP, user agent) may be kept briefly by
             Vercel to run the site.
           </li>
+          <li>
+            <span className="text-fg">First-visit studio intro</span> may load
+            a muted YouTube embed of the Webb Spinner Visions hero film
+            (youtube-nocookie.com) so the clip can play. Reduced-motion
+            visitors see a still instead.
+          </li>
         </ul>
       </section>
 
