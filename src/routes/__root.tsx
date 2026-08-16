@@ -9,30 +9,42 @@ import { InstallCoach } from "@/components/install-coach";
 import { initNativeChrome } from "@/lib/native";
 import { configureIap } from "@/lib/iap";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
+import {
+  SITE_DESCRIPTION,
+  SITE_JSON_LD,
+  SITE_NAME,
+  SITE_ORIGIN,
+  SITE_TITLE,
+  absoluteUrl,
+} from "@/lib/site";
 import appCss from "../styles.css?url";
-
-const APP_NAME = "Volunteer Scratch Vault";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: APP_NAME },
-      {
-        name: "description",
-        content:
-          "Independent Tennessee scratch-off heat map. Grand prizes, medium prizes, and bust games from public remaining-prize data.",
-      },
-      { name: "apple-mobile-web-app-title", content: APP_NAME },
+      { title: SITE_TITLE },
+      { name: "description", content: SITE_DESCRIPTION },
+      { name: "robots", content: "index, follow" },
+      { name: "author", content: "Webb Spinner Visions" },
+      { name: "apple-mobile-web-app-title", content: SITE_NAME },
       { name: "theme-color", content: "#0B0F0C" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: SITE_TITLE },
+      { name: "twitter:description", content: SITE_DESCRIPTION },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "/og.jpg" },
+      { property: "og:site_name", content: SITE_NAME },
+      { property: "og:locale", content: "en_US" },
+      { property: "og:title", content: SITE_TITLE },
+      { property: "og:description", content: SITE_DESCRIPTION },
+      { property: "og:url", content: SITE_ORIGIN },
+      { property: "og:image", content: absoluteUrl("/og.jpg") },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
     ],
     links: [
+      { rel: "canonical", href: SITE_ORIGIN },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "icon", type: "image/png", sizes: "192x192", href: "/pwa-192.png" },
       { rel: "stylesheet", href: appCss },
@@ -48,6 +60,10 @@ export const Route = createRootRoute({
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
+        />
       </head>
       <body>
         <PreviewHostBridge />

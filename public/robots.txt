@@ -1,0 +1,11 @@
+# Volunteer Scratch Vault — public desk is crawlable.
+# Account, login, and billing are not.
+
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /login
+Disallow: /api/
+Disallow: /billing/
+
+Sitemap: https://volunteer-scratch-vault.vercel.app/sitemap.xml

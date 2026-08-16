@@ -3,12 +3,17 @@ import {
   DisclaimerLead,
   DisclaimerPanel,
 } from "@/components/disclaimer-panel";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/disclaimer")({
   component: DisclaimerPage,
-  head: () => ({
-    meta: [{ title: "Disclaimer & responsible play · Volunteer Scratch Vault" }],
-  }),
+  head: () =>
+    pageHead({
+      title: "Disclaimer & responsible play",
+      description:
+        "Independent remaining-prize desk. Not affiliated with the Tennessee Education Lottery. Remaining counts do not improve odds. 18+. 1-800-GAMBLER.",
+      path: "/disclaimer",
+    }),
 });
 
 function DisclaimerPage() {

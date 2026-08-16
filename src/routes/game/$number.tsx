@@ -6,10 +6,26 @@ import { TicketFace } from "@/components/ticket-face";
 import { LockedPanel } from "@/components/locked-panel";
 import { useAccess } from "@/lib/use-access";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
+import { pageHead } from "@/lib/site";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/game/$number")({
   component: GameDetail,
+  head: ({ params }) => {
+    const game = GAMES.find((g) => String(g.number) === params.number);
+    if (!game) {
+      return pageHead({
+        title: "Game not found",
+        path: `/game/${params.number}`,
+        noindex: true,
+      });
+    }
+    return pageHead({
+      title: `${game.name} remaining prizes · TN #${game.number}`,
+      description: `Posted remaining prizes for ${game.name}, a $${game.price} Tennessee scratch-off. Independent desk. Remaining counts do not improve odds. 18+.`,
+      path: `/game/${game.number}`,
+    });
+  },
 });
 
 function GameDetail() {

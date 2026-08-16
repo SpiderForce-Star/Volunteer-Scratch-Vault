@@ -12,6 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/pricing")({
   validateSearch: (search: Record<string, unknown>): { canceled?: boolean } => {
@@ -19,9 +20,13 @@ export const Route = createFileRoute("/pricing")({
     return {};
   },
   component: PricingPage,
-  head: () => ({
-    meta: [{ title: "Pricing · Volunteer Scratch Vault" }],
-  }),
+  head: () =>
+    pageHead({
+      title: "Pricing",
+      description:
+        "Full Tennessee remaining-prize desk. $4.99/month or $49.99/year with a 1-month free trial. Cancel anytime. 18+. Independent of the Lottery.",
+      path: "/pricing",
+    }),
 });
 
 function PricingPage() {

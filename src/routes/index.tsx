@@ -22,10 +22,17 @@ import { TripCard } from "@/components/trip-card";
 import { TrialCta } from "@/components/trial-cta";
 import { useAccess } from "@/lib/use-access";
 import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
+import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: VaultHome,
+  head: () =>
+    pageHead({
+      title: SITE_TITLE,
+      description: SITE_DESCRIPTION,
+      path: "/",
+    }),
 });
 
 const FILTERS: { id: PriceFilter; label: string }[] = [

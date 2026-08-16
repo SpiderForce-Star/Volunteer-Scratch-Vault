@@ -20,12 +20,16 @@ import {
   enableDeskNotifications,
 } from "@/lib/desk-alert";
 import { TRIAL_CTA } from "@/components/trial-cta";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/account")({
   component: AccountPage,
-  head: () => ({
-    meta: [{ title: "Account · Volunteer Scratch Vault" }],
-  }),
+  head: () =>
+    pageHead({
+      title: "Account",
+      path: "/account",
+      noindex: true,
+    }),
 });
 
 function AccountPage() {

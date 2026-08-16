@@ -2,15 +2,19 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { syncCheckoutSession } from "@/lib/billing";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/billing/success")({
   validateSearch: (search: Record<string, unknown>) => ({
     session_id: typeof search.session_id === "string" ? search.session_id : "",
   }),
   component: SuccessPage,
-  head: () => ({
-    meta: [{ title: "You’re in · Volunteer Scratch Vault" }],
-  }),
+  head: () =>
+    pageHead({
+      title: "You’re in",
+      path: "/billing/success",
+      noindex: true,
+    }),
 });
 
 function SuccessPage() {

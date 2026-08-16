@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
-  head: () => ({
-    meta: [{ title: "Privacy · Volunteer Scratch Vault" }],
-  }),
+  head: () =>
+    pageHead({
+      title: "Privacy",
+      description:
+        "Privacy policy for Volunteer Scratch Vault. Email and purchases only. Independent remaining-prize desk. 18+.",
+      path: "/privacy",
+    }),
 });
 
 function PrivacyPage() {

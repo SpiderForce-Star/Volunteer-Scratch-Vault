@@ -2,6 +2,7 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { authEnabled, GROK_PROVIDERS, signIn } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { pageHead } from "@/lib/site";
 
 function safeNext(value: unknown): string {
   if (typeof value !== "string") return "/";
@@ -14,9 +15,12 @@ export const Route = createFileRoute("/login")({
     next: safeNext(search.next),
   }),
   component: LoginPage,
-  head: () => ({
-    meta: [{ title: "Sign in · Volunteer Scratch Vault" }],
-  }),
+  head: () =>
+    pageHead({
+      title: "Sign in",
+      path: "/login",
+      noindex: true,
+    }),
 });
 
 function LoginPage() {
