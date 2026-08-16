@@ -37,6 +37,12 @@ export function persistAgeConfirmation(): void {
 export async function initNativeChrome(): Promise<void> {
   if (!isNativeApp()) return;
   try {
+    const { configureIap } = await import("./iap");
+    await configureIap();
+  } catch (err) {
+    console.error("[native] IAP configure skipped", err);
+  }
+  try {
     const { StatusBar, Style } = await import("@capacitor/status-bar");
     await StatusBar.setStyle({ style: Style.Dark });
     await StatusBar.setBackgroundColor({ color: "#0a0a0b" });

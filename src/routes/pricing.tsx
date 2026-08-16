@@ -4,6 +4,7 @@ import { createCheckoutSession } from "@/lib/billing";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useAccess } from "@/lib/use-access";
 import { isNativeApp } from "@/lib/native";
+import { purchasePlan, restoreNativePurchases } from "@/lib/iap";
 import {
   Accordion,
   AccordionContent,
@@ -25,25 +26,32 @@ export const Route = createFileRoute("/pricing")({
 function PricingPage() {
   const { canceled } = Route.useSearch();
   const { user, isPending } = useCurrentUserState();
-  const { paid } = useAccess();
-  const [loading, setLoading] = useState<"monthly" | "annual" | null>(null);
+  const { paid, isPending: accessPending } = useAccess();
+  const [loading, setLoading] = useState<"monthly" | "annual" | "restore" | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
+  const native = isNativeApp();
 
   const startCheckout = async (plan: "monthly" | "annual") => {
-    if (isPending) return;
-    if (isNativeApp()) {
-      setError(
-        "Full Access on iOS and Android is sold through the App Store and Google Play, not Stripe.",
-      );
-      return;
-    }
-    if (!user) {
-      window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
-      return;
-    }
+    if (isPending || accessPending) return;
     setLoading(plan);
     setError(null);
     try {
+      if (native) {
+        const access = await purchasePlan(plan);
+        if (access.paid) {
+          window.location.href = "/";
+          return;
+        }
+        setError("Purchase finished but Full Access is not active yet. Try Restore purchases.");
+        setLoading(null);
+        return;
+      }
+      if (!user) {
+        window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
+        return;
+      }
       const result = await createCheckoutSession({ data: { plan } });
       if (result?.url) {
         window.location.href = result.url;
@@ -57,8 +65,29 @@ function PricingPage() {
         window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
         return;
       }
+      if (message === "Purchase canceled.") {
+        setLoading(null);
+        return;
+      }
       console.error(err);
       setError(message);
+      setLoading(null);
+    }
+  };
+
+  const restore = async () => {
+    setLoading("restore");
+    setError(null);
+    try {
+      const access = await restoreNativePurchases();
+      if (access.paid) {
+        window.location.href = "/";
+        return;
+      }
+      setError("No active Full Access purchase was found for this store account.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Restore failed.");
+    } finally {
       setLoading(null);
     }
   };
@@ -84,11 +113,10 @@ function PricingPage() {
         </p>
       ) : null}
 
-      {isNativeApp() ? (
+      {native ? (
         <p className="mt-6 text-center text-sm text-muted">
-          On iOS and Android, Full Access is $4.99/month or $49.99/year with a
-          1-month free trial through the App Store or Google Play. Stripe
-          checkout stays on the website.
+          Full Access is $4.99/month or $49.99/year with a free trial, billed
+          through the App Store or Google Play.
         </p>
       ) : null}
 
@@ -118,15 +146,11 @@ function PricingPage() {
           </ul>
           <button
             type="button"
-            disabled={loading !== null || paid || isNativeApp()}
+            disabled={loading !== null || paid}
             onClick={() => startCheckout("monthly")}
             className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
           >
-            {isNativeApp()
-              ? "App Store / Play Billing next"
-              : loading === "monthly"
-                ? "Starting trial…"
-                : "Start 30-day free trial"}
+            {loading === "monthly" ? "Starting trial…" : "Start free trial"}
           </button>
         </div>
 
@@ -148,15 +172,11 @@ function PricingPage() {
           </ul>
           <button
             type="button"
-            disabled={loading !== null || paid || isNativeApp()}
+            disabled={loading !== null || paid}
             onClick={() => startCheckout("annual")}
             className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
           >
-            {isNativeApp()
-              ? "App Store / Play Billing next"
-              : loading === "annual"
-                ? "Starting trial…"
-                : "Start free trial · Annual"}
+            {loading === "annual" ? "Starting trial…" : "Start free trial · Annual"}
           </button>
         </div>
       </div>
@@ -164,6 +184,17 @@ function PricingPage() {
       {error && (
         <p className="mt-6 text-center text-sm text-bust">{error}</p>
       )}
+
+      {native ? (
+        <button
+          type="button"
+          disabled={loading !== null}
+          onClick={() => void restore()}
+          className="mx-auto mt-6 flex min-h-11 items-center justify-center text-sm text-muted underline underline-offset-2 hover:text-fg disabled:opacity-60"
+        >
+          {loading === "restore" ? "Restoring…" : "Restore purchases"}
+        </button>
+      ) : null}
 
       <section className="mx-auto mt-16 max-w-2xl">
         <h2 className="font-display text-2xl tracking-tight">Pricing FAQ</h2>
@@ -178,8 +209,9 @@ function PricingPage() {
           <AccordionItem value="cancel">
             <AccordionTrigger>Can I cancel anytime?</AccordionTrigger>
             <AccordionContent>
-              Yes. Use Manage billing on your account page to cancel or switch
-              monthly and annual. Access stays open through the paid (or trial)
+              Yes. On the website, use Manage billing. In the iOS or Android
+              app, use Manage subscription to open the App Store or Google Play
+              subscription page. Access stays open through the paid or trial
               period.
             </AccordionContent>
           </AccordionItem>

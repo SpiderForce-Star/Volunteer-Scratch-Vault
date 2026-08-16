@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AgeGate } from "@/components/age-gate";
 import { initNativeChrome } from "@/lib/native";
+import { configureIap } from "@/lib/iap";
+import { useCurrentUser } from "@/lib/auth/use-current-user";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Volunteer Scratch Vault";
@@ -58,9 +60,17 @@ export const Route = createRootRoute({
 });
 
 function NativeRoot() {
+  const user = useCurrentUser();
+
   useEffect(() => {
     void initNativeChrome();
   }, []);
+
+  useEffect(() => {
+    void configureIap(user?.id ?? null).catch((err) => {
+      console.error("[iap] configure failed", err);
+    });
+  }, [user?.id]);
 
   return (
     <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">

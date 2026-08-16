@@ -5,6 +5,12 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { createPortalSession, getBillingSummary } from "@/lib/billing";
 import { isNativeApp } from "@/lib/native";
 import {
+  getNativeAccess,
+  manageNativeSubscription,
+  restoreNativePurchases,
+  type NativeAccess,
+} from "@/lib/iap";
+import {
   formatBillingDate,
   planLabel,
   type BillingSummary,
@@ -19,18 +25,31 @@ export const Route = createFileRoute("/account")({
 
 function AccountPage() {
   const { user, isPending } = useCurrentUserState();
+  const native = isNativeApp();
   const [summary, setSummary] = useState<BillingSummary | null>(null);
+  const [nativeAccess, setNativeAccess] = useState<NativeAccess | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [portalBusy, setPortalBusy] = useState(false);
+  const [busy, setBusy] = useState<"portal" | "restore" | "manage" | null>(null);
 
   useEffect(() => {
-    if (isPending || !user || user.isDevFallback) return;
-    void getBillingSummary()
-      .then(setSummary)
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : "Could not load billing.");
-      });
-  }, [user, isPending]);
+    if (isPending) return;
+    if (native) {
+      void getNativeAccess()
+        .then(setNativeAccess)
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : "Could not load purchases.");
+        });
+    }
+    if (user && !user.isDevFallback) {
+      void getBillingSummary()
+        .then(setSummary)
+        .catch((err) => {
+          if (!native) {
+            setError(err instanceof Error ? err.message : "Could not load billing.");
+          }
+        });
+    }
+  }, [user, isPending, native]);
 
   if (isPending) {
     return (
@@ -40,23 +59,68 @@ function AccountPage() {
     );
   }
 
-  if (!user) {
+  if (!native && !user) {
     return <Navigate to="/login" search={{ next: "/account" }} />;
   }
 
-  const paid = user.isDevFallback || Boolean(summary?.paid);
-  const status = user.isDevFallback ? "active" : summary?.status;
-  const plan = user.isDevFallback ? "monthly" : summary?.plan;
+  const paid =
+    user?.isDevFallback ||
+    Boolean(nativeAccess?.paid) ||
+    Boolean(summary?.paid);
+  const status = nativeAccess?.paid
+    ? nativeAccess.status
+    : user?.isDevFallback
+      ? "active"
+      : summary?.status;
+  const plan = nativeAccess?.paid
+    ? nativeAccess.plan
+    : user?.isDevFallback
+      ? "monthly"
+      : summary?.plan;
+  const trialEnd = nativeAccess?.paid
+    ? nativeAccess.trialEnd
+    : summary?.trialEnd;
+  const periodEnd = nativeAccess?.paid
+    ? nativeAccess.currentPeriodEnd
+    : summary?.currentPeriodEnd;
 
   const openPortal = async () => {
-    setPortalBusy(true);
+    setBusy("portal");
     setError(null);
     try {
       const result = await createPortalSession();
       if (result.url) window.location.href = result.url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not open billing portal.");
-      setPortalBusy(false);
+      setBusy(null);
+    }
+  };
+
+  const restore = async () => {
+    setBusy("restore");
+    setError(null);
+    try {
+      const access = await restoreNativePurchases();
+      setNativeAccess(access);
+      if (!access.paid) {
+        setError("No active Full Access purchase was found for this store account.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Restore failed.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const manage = async () => {
+    setBusy("manage");
+    setError(null);
+    try {
+      await manageNativeSubscription();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not open subscription settings.");
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -67,7 +131,9 @@ function AccountPage() {
       </p>
       <h1 className="mt-3 font-display text-4xl tracking-tight">Your desk</h1>
       <p className="mt-2 text-sm text-muted">
-        {user.primaryEmail ?? user.displayName ?? "Signed in"}
+        {user
+          ? (user.primaryEmail ?? user.displayName ?? "Signed in")
+          : "Store account"}
       </p>
 
       <div className="mt-8 rounded-xl border border-line bg-surface p-6">
@@ -79,32 +145,53 @@ function AccountPage() {
         </p>
         <p className="mt-1 text-sm text-muted">
           {status === "trialing"
-            ? `Trial ends ${formatBillingDate(summary?.trialEnd ?? summary?.currentPeriodEnd)}`
+            ? `Trial ends ${formatBillingDate(trialEnd ?? periodEnd)}`
             : paid
-              ? `Next bill ${formatBillingDate(summary?.currentPeriodEnd)}`
-              : "Start a 30-day trial to unlock the full remaining-prize desk."}
+              ? `Next bill ${formatBillingDate(periodEnd)}`
+              : "Start a free trial to unlock the full remaining-prize desk."}
         </p>
-        {summary?.cancelAtPeriodEnd ? (
+        {summary?.cancelAtPeriodEnd || (nativeAccess && !nativeAccess.willRenew && nativeAccess.paid) ? (
           <p className="mt-2 text-sm text-warm">
             Cancellation is scheduled. Access stays open through the current period.
           </p>
         ) : null}
 
         <div className="mt-6 flex flex-col gap-3">
-          {isNativeApp() ? (
-            <p className="rounded-md border border-line bg-bg px-3 py-3 text-sm text-muted">
-              On iOS and Android, Full Access is sold through the App Store and
-              Google Play — not Stripe. Native in-app purchase lands in the next
-              store build.
-            </p>
+          {native ? (
+            <>
+              {!paid ? (
+                <Link
+                  to="/pricing"
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
+                >
+                  Start free trial
+                </Link>
+              ) : null}
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() => void manage()}
+                className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+              >
+                {busy === "manage" ? "Opening…" : "Manage subscription"}
+              </button>
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() => void restore()}
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg disabled:opacity-60"
+              >
+                {busy === "restore" ? "Restoring…" : "Restore purchases"}
+              </button>
+            </>
           ) : paid && summary?.hasCustomer ? (
             <button
               type="button"
-              disabled={portalBusy}
+              disabled={busy !== null}
               onClick={() => void openPortal()}
               className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
             >
-              {portalBusy ? "Opening…" : "Manage billing"}
+              {busy === "portal" ? "Opening…" : "Manage billing"}
             </button>
           ) : (
             <Link
@@ -114,13 +201,23 @@ function AccountPage() {
               {paid ? "View plans" : "Start 30-day trial"}
             </Link>
           )}
-          <button
-            type="button"
-            onClick={() => void signOut("/")}
-            className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg"
-          >
-            Sign out
-          </button>
+          {user ? (
+            <button
+              type="button"
+              onClick={() => void signOut("/")}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg"
+            >
+              Sign out
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              search={{ next: "/account" }}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
 
