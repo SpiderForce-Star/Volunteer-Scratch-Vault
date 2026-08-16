@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useDeskAlert } from "@/lib/use-desk-alert";
+import { TrialCta } from "@/components/trial-cta";
+import { useAccess } from "@/lib/use-access";
 
 const NAV = [
   { to: "/" as const, hash: "desk", label: "Desk" },
@@ -73,10 +75,17 @@ export function SiteHeader() {
             );
           })}
           <HeaderAuth />
+          <HeaderTrial />
         </nav>
       </div>
     </header>
   );
+}
+
+function HeaderTrial() {
+  const { paid, isPending } = useAccess();
+  if (isPending || paid) return null;
+  return <TrialCta className="hidden px-3 text-xs lg:inline-flex" />;
 }
 
 function HeaderAuth() {

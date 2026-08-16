@@ -19,6 +19,7 @@ import {
   deskNotifyEnabled,
   enableDeskNotifications,
 } from "@/lib/desk-alert";
+import { TRIAL_CTA } from "@/components/trial-cta";
 
 export const Route = createFileRoute("/account")({
   component: AccountPage,
@@ -172,7 +173,7 @@ function AccountPage() {
                   to="/pricing"
                   className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
                 >
-                  Start free trial
+                  {TRIAL_CTA}
                 </Link>
               ) : null}
               <button
@@ -206,7 +207,7 @@ function AccountPage() {
               to="/pricing"
               className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg"
             >
-              {paid ? "View plans" : "Start 30-day trial"}
+              {paid ? "View plans" : TRIAL_CTA}
             </Link>
           )}
           {user ? (

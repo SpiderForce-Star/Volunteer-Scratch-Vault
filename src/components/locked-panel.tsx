@@ -1,26 +1,15 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
+import { TrialCta } from "@/components/trial-cta";
 import { cn } from "@/lib/utils";
 
 export function UnlockFullDeskButton({
   className,
-  children = "Unlock full desk",
 }: {
   className?: string;
   children?: ReactNode;
 }) {
-  return (
-    <Link
-      to="/pricing"
-      className={cn(
-        "inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg",
-        className,
-      )}
-    >
-      {children}
-    </Link>
-  );
+  return <TrialCta className={className} />;
 }
 
 export function LockedPanel({

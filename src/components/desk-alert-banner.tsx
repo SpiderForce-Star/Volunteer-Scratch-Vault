@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import { DESK_META } from "@/data/desk-meta";
 import { useDeskAlert } from "@/lib/use-desk-alert";
+import { TrialCta } from "@/components/trial-cta";
 
 /** Subscriber live banner, or unpaid SELL card. Never a fake personal alert. */
 export function DeskAlertBanner() {
@@ -16,12 +16,7 @@ export function DeskAlertBanner() {
             Subscribers get a radar alert the moment new remaining-prize counts
             hit the desk.
           </p>
-          <Link
-            to="/pricing"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
-          >
-            Start 1-month free trial — include radar alerts
-          </Link>
+          <TrialCta className="shrink-0" />
         </div>
       </div>
     );

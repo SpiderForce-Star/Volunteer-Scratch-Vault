@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
+import { TrialCta } from "@/components/trial-cta";
 import { GAMES } from "@/data/games";
 import { catalogHeat } from "@/lib/heat";
 import { cn } from "@/lib/utils";
@@ -32,12 +32,7 @@ export function UnlockStrip({ locked = true }: { locked?: boolean }) {
           <p className="max-w-xl text-sm leading-relaxed text-muted">
             Unlock the full ranking — 1 month free, then $4.99/mo or $49.99/yr
           </p>
-          <Link
-            to="/pricing"
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg"
-          >
-            Start 1-month free trial
-          </Link>
+          <TrialCta />
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { createCheckoutSession } from "@/lib/billing";
+import { TRIAL_CTA } from "@/components/trial-cta";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useAccess } from "@/lib/use-access";
 import { isNativeApp } from "@/lib/native";
@@ -131,64 +132,48 @@ function PricingPage() {
       ) : null}
 
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
-        <div className="rounded-xl border border-line bg-surface p-6">
+        <div className="rounded-xl border border-gold bg-surface p-6 ring-1 ring-gold/30 sm:order-2">
+          <p className="font-mono text-xs tracking-wide text-gold uppercase">
+            Annual · Best value · save ~$10
+          </p>
+          <p className="mt-2 font-display text-3xl">
+            $49.99<span className="text-lg text-muted">/year</span>
+          </p>
+          <p className="mt-1 text-sm text-muted">1-month free trial</p>
+          <button
+            type="button"
+            disabled={loading !== null || paid}
+            onClick={() => startCheckout("annual")}
+            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+          >
+            {loading === "annual" ? "Starting trial…" : TRIAL_CTA}
+          </button>
+        </div>
+
+        <div className="rounded-xl border border-line bg-surface p-6 sm:order-1">
           <p className="font-mono text-xs tracking-wide text-faint uppercase">
             Monthly
           </p>
           <p className="mt-2 font-display text-3xl">
             $4.99<span className="text-lg text-muted">/mo</span>
           </p>
-          <p className="mt-1 text-sm text-muted">30-day free trial included</p>
-          <ul className="mt-6 space-y-2 text-sm text-muted">
-            <li>Full heat rankings</li>
-            <li>Official three-tier remaining counts</li>
-            <li>Mid-tier leaders and skip list</li>
-            <li>Radar alerts when new remaining-prize data drops</li>
-            <li>Cancel anytime</li>
-          </ul>
+          <p className="mt-1 text-sm text-muted">1-month free trial</p>
           <button
             type="button"
             disabled={loading !== null || paid}
             onClick={() => startCheckout("monthly")}
-            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
+            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper disabled:opacity-60"
           >
-            {loading === "monthly" ? "Starting trial…" : "Start free trial"}
-          </button>
-        </div>
-
-        <div className="rounded-xl border border-accent bg-surface p-6 ring-1 ring-accent/30">
-          <p className="font-mono text-xs tracking-wide text-faint uppercase">
-            Annual · Best value · save ~$10
-          </p>
-          <p className="mt-2 font-display text-3xl">
-            $49.99<span className="text-lg text-muted">/year</span>
-          </p>
-          <p className="mt-1 text-sm text-muted">
-            Save ~$10 vs monthly · same 30-day free trial
-          </p>
-          <ul className="mt-6 space-y-2 text-sm text-muted">
-            <li>Everything in Monthly</li>
-            <li>Lower yearly cost</li>
-            <li>Same 30-day free trial</li>
-            <li>Radar alerts when new remaining-prize data drops</li>
-            <li>Cancel anytime</li>
-          </ul>
-          <button
-            type="button"
-            disabled={loading !== null || paid}
-            onClick={() => startCheckout("annual")}
-            className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
-          >
-            {loading === "annual" ? "Starting trial…" : "Start free trial · Annual"}
+            {loading === "monthly" ? "Starting trial…" : TRIAL_CTA}
           </button>
         </div>
       </div>
 
-      <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">
-        The public desk is a preview. Full rankings + radar alerts when the
-        official counts move. 1 month free, then $4.99/mo or $49.99/yr. Cancel
-        anytime. 18+.
-      </p>
+      <ul className="mx-auto mt-8 max-w-md space-y-1 text-center text-sm text-muted">
+        <li>Full heat desk</li>
+        <li>Skip / bust list</li>
+        <li>Radar when new counts drop</li>
+      </ul>
 
       {error && (
         <p className="mt-6 text-center text-sm text-bust">{error}</p>
