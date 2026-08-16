@@ -10,7 +10,13 @@ dist
 *.log
 .DS_Store
 .node_modules.lock
-screenshots
+/screenshots
 artifacts
 attachments
 .grok
+ios/App/Pods
+ios/App/build
+android/.gradle
+android/app/build
+android/build
+*.iml
