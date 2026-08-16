@@ -27,12 +27,20 @@ export function SiteFooter() {
                 1-800-889-9789
               </a>
             </p>
-            <Link
-              to="/disclaimer"
-              className="mt-3 inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
-            >
-              Full disclaimer & help resources
-            </Link>
+            <div className="mt-3 flex flex-wrap gap-x-4">
+              <Link
+                to="/disclaimer"
+                className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+              >
+                Full disclaimer & help resources
+              </Link>
+              <Link
+                to="/pricing"
+                className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+              >
+                Pricing
+              </Link>
+            </div>
           </div>
         </div>
 

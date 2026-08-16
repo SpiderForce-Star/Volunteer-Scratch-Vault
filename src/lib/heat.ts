@@ -119,7 +119,7 @@ export function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   return game.price > 20;
 }
 
-export type SortKey = "heat" | "grand" | "medium" | "price" | "name";
+export type SortKey = "heat" | "grand" | "medium" | "safest" | "price" | "name";
 
 export function sortGames(
   games: Game[],
@@ -133,6 +133,10 @@ export function sortGames(
     if (key === "heat") return rb.vault - ra.vault;
     if (key === "grand") return rb.grand - ra.grand;
     if (key === "medium") return rb.medium - ra.medium;
+    if (key === "safest") {
+      if (ra.bust !== rb.bust) return Number(ra.bust) - Number(rb.bust);
+      return rb.vault - ra.vault;
+    }
     if (key === "price") return a.price - b.price || a.number - b.number;
     return a.name.localeCompare(b.name);
   });

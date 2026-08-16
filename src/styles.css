@@ -10,10 +10,14 @@
   --color-line: #2a2a30;
   --color-accent: #d5d8de;
   --color-accent-fg: #0a0a0b;
-  --color-hot: #4ade80;
-  --color-warm: #fbbf24;
-  --color-cool: #94a3b8;
-  --color-bust: #f87171;
+  --color-hot: #f3c15b;
+  --color-hot-ink: #2a1a05;
+  --color-warm: #e08a2c;
+  --color-warm-ink: #231407;
+  --color-cool: #8b9aab;
+  --color-cool-ink: #12161c;
+  --color-bust: #e07060;
+  --color-bust-ink: #2a0f0c;
   --font-display: "Fraunces", "Times New Roman", serif;
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;

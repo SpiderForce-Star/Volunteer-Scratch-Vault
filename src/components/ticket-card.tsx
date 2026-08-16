@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { money, moneyFull, type Game } from "@/data/games";
+import { DATA_AS_OF, moneyFull, type Game } from "@/data/games";
 import { bandLabel, type HeatReport } from "@/lib/heat";
 import { TicketFace } from "@/components/ticket-face";
 import { cn } from "@/lib/utils";
@@ -7,10 +7,14 @@ import { cn } from "@/lib/utils";
 export function TicketCard({
   game,
   heat,
+  locked = false,
 }: {
   game: Game;
   heat: HeatReport;
+  locked?: boolean;
 }) {
+  const topLeft = heat.effectiveTop ?? heat.topRemaining;
+  const midLeft = heat.midRemaining;
 
   return (
     <Link
@@ -20,6 +24,7 @@ export function TicketCard({
         "group block overflow-hidden border bg-surface",
         "rounded-xl transition-transform duration-200",
         "hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+        heat.bust && "border-bust/40",
       )}
     >
       <div className="relative overflow-hidden">
@@ -33,7 +38,7 @@ export function TicketCard({
             {game.name}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Top {moneyFull(game.topPrize)} · 1 in {game.odds.toFixed(2)}
+            Top {moneyFull(game.topPrize)} · printed odds 1 in {game.odds.toFixed(2)}
           </p>
         </div>
 
@@ -47,15 +52,32 @@ export function TicketCard({
         </div>
 
         <dl className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
-          {game.tiers.slice(0, 3).map((tier) => (
-            <div key={tier.amount}>
-              <dt className="text-faint">{money(tier.amount)}</dt>
-              <dd className="font-mono text-sm text-fg">
-                {tier.remaining == null ? "—" : tier.remaining.toLocaleString()}
-              </dd>
-            </div>
-          ))}
+          <div>
+            <dt className="text-faint">Remaining top</dt>
+            <dd className="font-mono text-sm text-fg">
+              {locked ? "••" : topLeft == null ? "—" : topLeft.toLocaleString()}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-faint">Remaining mid</dt>
+            <dd className="font-mono text-sm text-fg">
+              {locked ? "••" : midLeft == null ? "—" : midLeft.toLocaleString()}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-faint">Heat</dt>
+            <dd className="font-mono text-sm text-fg">{Math.round(heat.vault)}</dd>
+          </div>
         </dl>
+
+        <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
+          Updated {DATA_AS_OF}
+        </p>
+        {heat.bust ? (
+          <p className="text-xs text-bust">
+            Skip this one — no useful retail top left on the posted counts.
+          </p>
+        ) : null}
       </div>
     </Link>
   );
@@ -95,15 +117,15 @@ export function BandChip({
   className?: string;
 }) {
   const map = {
-    hot: "bg-hot text-accent-fg",
-    warm: "bg-warm text-accent-fg",
-    cool: "bg-cool text-accent-fg",
-    bust: "bg-bust text-accent-fg",
+    hot: "border border-hot/50 bg-hot-ink text-hot",
+    warm: "border border-warm/50 bg-warm-ink text-warm",
+    cool: "border border-cool/40 bg-cool-ink text-cool",
+    bust: "border border-bust/50 bg-bust-ink text-bust",
   };
   return (
     <span
       className={cn(
-        "rounded-sm px-2 py-1 text-xs font-medium tracking-wide",
+        "rounded-sm px-2 py-1 text-xs font-semibold tracking-[0.12em] uppercase",
         map[band],
         className,
       )}

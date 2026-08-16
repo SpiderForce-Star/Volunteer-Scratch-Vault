@@ -3,6 +3,8 @@ import { GAMES, DATA_AS_OF, money, moneyFull } from "@/data/games";
 import { scoreGame } from "@/lib/heat";
 import { BandChip } from "@/components/ticket-card";
 import { TicketFace } from "@/components/ticket-face";
+import { LockedPanel } from "@/components/locked-panel";
+import { useAccess } from "@/lib/use-access";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/game/$number")({
@@ -14,6 +16,8 @@ function GameDetail() {
   const game = GAMES.find((g) => String(g.number) === number);
   if (!game) throw notFound();
   const heat = scoreGame(game);
+  const { paid } = useAccess();
+  const locked = !paid;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -73,6 +77,28 @@ function GameDetail() {
           />
         </section>
 
+        {heat.role === "jackpot" ? (
+          <section className="mt-8 rounded-lg border border-line bg-surface p-5">
+            <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
+              Play It Again holdback
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Tennessee holds one top prize per game for Play It Again. Posted top
+              remaining is {heat.topRemaining ?? "—"}. Effective retail top is{" "}
+              {heat.effectiveTop ?? "—"}. A posted “1 left” is treated as no
+              retail jackpot.
+            </p>
+          </section>
+        ) : null}
+
+        {heat.bust ? (
+          <p className="mt-8 rounded-lg border border-bust/40 bg-bust-ink px-4 py-3 text-sm text-bust">
+            Skip this one. The posted counts no longer support a useful retail
+            top. That is not a guarantee — remaining counts change as tickets
+            sell.
+          </p>
+        ) : null}
+
         <section className="mt-8">
           <h2 className="font-display text-xl">Remaining prizes</h2>
           <p className="mt-1 text-sm text-faint">
@@ -80,23 +106,20 @@ function GameDetail() {
             {game.source === "tn-remaining"
               ? "Tennessee Lottery remaining-prizes table (three published tiers)"
               : "Compiled public remaining counts"}
-            . As of {DATA_AS_OF}.
+            . Updated {DATA_AS_OF}. Not live store inventory.
           </p>
-          <ul className="mt-4 divide-y divide-line border border-line">
-            {game.tiers.map((tier) => (
-              <li
-                key={tier.amount}
-                className="flex items-center justify-between px-4 py-3"
+          {locked ? (
+            <div className="mt-4">
+              <LockedPanel
+                title="Full prize table is members-only"
+                teaser="Unlock remaining counts for every published tier."
               >
-                <span className="text-muted">{money(tier.amount)}</span>
-                <span className="font-mono text-fg">
-                  {tier.remaining == null
-                    ? "Not published"
-                    : `${tier.remaining.toLocaleString()} left`}
-                </span>
-              </li>
-            ))}
-          </ul>
+                <PrizeTable game={game} />
+              </LockedPanel>
+            </div>
+          ) : (
+            <PrizeTable game={game} />
+          )}
         </section>
 
         <p className="mt-10 pb-10 text-sm leading-relaxed text-faint">
@@ -106,6 +129,26 @@ function GameDetail() {
           18+ only. If gambling is a problem, call 1-800-GAMBLER.
         </p>
       </div>
+  );
+}
+
+function PrizeTable({ game }: { game: (typeof GAMES)[number] }) {
+  return (
+    <ul className="mt-4 divide-y divide-line border border-line">
+      {game.tiers.map((tier) => (
+        <li
+          key={tier.amount}
+          className="flex items-center justify-between px-4 py-3"
+        >
+          <span className="text-muted">{money(tier.amount)}</span>
+          <span className="font-mono text-fg">
+            {tier.remaining == null
+              ? "Not published"
+              : `${tier.remaining.toLocaleString()} left`}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
