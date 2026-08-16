@@ -22,7 +22,8 @@ export type Game = {
   theme: TicketTheme;
 };
 
-/** Compiled from public TN remaining-prize tables + published odds (Aug 2026). */
+/** Compiled from public TN remaining-prize tables + published odds (Aug 2026).
+ *  If this catalog changes, bump DESK_META.revision in desk-meta.ts. */
 export const DATA_AS_OF = "Week of August 11, 2026";
 
 export const GAMES: Game[] = [
