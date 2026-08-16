@@ -15,6 +15,10 @@ import {
   planLabel,
   type BillingSummary,
 } from "@/lib/subscription";
+import {
+  deskNotifyEnabled,
+  enableDeskNotifications,
+} from "@/lib/desk-alert";
 
 export const Route = createFileRoute("/account")({
   component: AccountPage,
@@ -29,7 +33,10 @@ function AccountPage() {
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [nativeAccess, setNativeAccess] = useState<NativeAccess | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"portal" | "restore" | "manage" | null>(null);
+  const [busy, setBusy] = useState<"portal" | "restore" | "manage" | "notify" | null>(
+    null,
+  );
+  const [notifyOn, setNotifyOn] = useState(false);
 
   useEffect(() => {
     if (isPending) return;
@@ -40,6 +47,7 @@ function AccountPage() {
           setError(err instanceof Error ? err.message : "Could not load purchases.");
         });
     }
+    setNotifyOn(deskNotifyEnabled());
     if (user && !user.isDevFallback) {
       void getBillingSummary()
         .then(setSummary)
@@ -226,6 +234,30 @@ function AccountPage() {
           Settings
         </p>
         <div className="mt-3 flex flex-col">
+          {paid ? (
+            <button
+              type="button"
+              disabled={busy !== null || notifyOn}
+              onClick={() => {
+                setBusy("notify");
+                void enableDeskNotifications()
+                  .then((ok) => {
+                    setNotifyOn(ok);
+                    if (!ok) {
+                      setError("Browser did not allow notifications.");
+                    }
+                  })
+                  .finally(() => setBusy(null));
+              }}
+              className="inline-flex min-h-11 items-center text-left text-sm text-muted underline underline-offset-2 hover:text-fg disabled:no-underline"
+            >
+              {notifyOn
+                ? "Desk alerts enabled in this browser"
+                : busy === "notify"
+                  ? "Asking permission…"
+                  : "Enable desk alerts"}
+            </button>
+          ) : null}
           <Link
             to="/privacy"
             className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"

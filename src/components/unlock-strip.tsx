@@ -10,7 +10,7 @@ export function UnlockStrip({ locked = true }: { locked?: boolean }) {
   return (
     <section className="border-b border-line bg-raised/40">
       <div className="mx-auto flex max-w-[1120px] flex-col gap-6 px-4 py-8 sm:px-6">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <GaugeCard
             label="Grand heat"
             value={heat.grand}
@@ -26,6 +26,7 @@ export function UnlockStrip({ locked = true }: { locked?: boolean }) {
             tone="sage"
           />
           <BustCard busts={heat.busts} locked={locked} />
+          <RadarAlertCard locked={locked} />
         </div>
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-sm leading-relaxed text-muted">
@@ -124,6 +125,25 @@ function BustCard({ busts, locked }: { busts: number; locked: boolean }) {
       <p className="font-display text-2xl tabular-nums">{busts}</p>
       <p className="mt-1 text-xs leading-relaxed text-faint">
         Games the desk flags to walk past. Not a guarantee.
+      </p>
+    </article>
+  );
+}
+
+function RadarAlertCard({ locked }: { locked: boolean }) {
+  return (
+    <article className="relative overflow-hidden rounded-lg border border-line bg-bg p-4">
+      {locked ? <LockMark /> : null}
+      <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
+        Radar alerts
+      </p>
+      <div className="relative mt-4 flex h-16 items-center justify-center">
+        <span className="absolute size-14 rounded-full border border-gold/30" />
+        <span className="absolute size-9 rounded-full border border-sage/30" />
+        <span className="size-2 rounded-full bg-gold" />
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
+        Know when the desk changes. Review before you go to the store.
       </p>
     </article>
   );

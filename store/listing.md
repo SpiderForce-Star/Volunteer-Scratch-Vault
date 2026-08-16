@@ -47,7 +47,7 @@ Volunteer Scratch Vault is an independent remaining-prize desk for Tennessee scr
 
 This is not a lottery. We do not sell tickets, take wagers, or pay prizes. We are not affiliated with, endorsed by, or connected to the Tennessee Education Lottery Corporation. Ticket faces in the app are independent reconstructions for store identification, not official Lottery artwork.
 
-Printed overall odds never change. Remaining counts change as tickets sell, and they do not improve your odds of winning any prize. The desk does not show live store inventory. Full Access ($4.99/month or $49.99/year, with a free trial) unlocks the three-tier table, mid-tier leaders, and the skip list. Cancel anytime through your App Store or Google Play subscription settings.
+Printed overall odds never change. Remaining counts change as tickets sell, and they do not improve your odds of winning any prize. The desk does not show live store inventory. Full Access ($4.99/month or $49.99/year, with a free trial) unlocks the three-tier table, mid-tier leaders, the skip list, and radar alerts. Radar alerts tell you when new Tennessee remaining-prize information is on the desk, so you can review rankings before you buy a ticket. Informational only. Remaining counts do not improve your odds of winning. Cancel anytime through your App Store or Google Play subscription settings.
 
 You must be 18 or older. Play only with money you can afford to lose. If gambling is no longer fun, call or text 1-800-GAMBLER (1-800-522-4700) or the Tennessee REDLINE at 1-800-889-9789.
 

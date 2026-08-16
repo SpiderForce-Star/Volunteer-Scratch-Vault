@@ -102,8 +102,9 @@ function PricingPage() {
           Unlock the complete Tennessee desk
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted">
-          Full remaining-prize rankings, mid-tier leaders, and the skip list.
-          Start with a 30-day free trial. Cancel anytime.
+          Full remaining-prize rankings, mid-tier leaders, the skip list, and
+          radar alerts when new official counts hit the desk. Start with a
+          30-day free trial. Cancel anytime.
         </p>
       </div>
 
@@ -142,6 +143,7 @@ function PricingPage() {
             <li>Full heat rankings</li>
             <li>Official three-tier remaining counts</li>
             <li>Mid-tier leaders and skip list</li>
+            <li>Radar alerts when new remaining-prize data drops</li>
             <li>Cancel anytime</li>
           </ul>
           <button
@@ -168,6 +170,7 @@ function PricingPage() {
             <li>Everything in Monthly</li>
             <li>Lower yearly cost</li>
             <li>Same 30-day free trial</li>
+            <li>Radar alerts when new remaining-prize data drops</li>
             <li>Cancel anytime</li>
           </ul>
           <button
@@ -180,6 +183,12 @@ function PricingPage() {
           </button>
         </div>
       </div>
+
+      <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">
+        The public desk is a preview. Full rankings + radar alerts when the
+        official counts move. 1 month free, then $4.99/mo or $49.99/yr. Cancel
+        anytime. 18+.
+      </p>
 
       {error && (
         <p className="mt-6 text-center text-sm text-bust">{error}</p>
@@ -219,9 +228,10 @@ function PricingPage() {
             <AccordionTrigger>What does full access include?</AccordionTrigger>
             <AccordionContent>
               The official three-tier remaining-prize table, mid-tier leaders,
-              the skip/bust list, heat scores, and game-by-game remaining top
-              and mid counts. The free homepage still shows a teaser desk and
-              the legal disclaimer.
+              the skip/bust list, heat scores, game-by-game remaining top
+              and mid counts, and radar alerts when new remaining-prize data
+              is ready to review. The free homepage still shows a teaser desk
+              and the legal disclaimer.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="lottery">
