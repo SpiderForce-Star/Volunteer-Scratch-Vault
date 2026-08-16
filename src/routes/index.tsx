@@ -12,7 +12,9 @@ import {
 import { TicketCard } from "@/components/ticket-card";
 import { DeskReviewPanel } from "@/components/desk-review";
 import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
-import { UnlockFullDeskButton } from "@/components/locked-panel";
+import { RadarCashHero } from "@/components/radar-cash-hero";
+import { UnlockStrip } from "@/components/unlock-strip";
+import { BootSplash } from "@/components/boot-splash";
 import { useAccess } from "@/lib/use-access";
 import { cn } from "@/lib/utils";
 
@@ -65,46 +67,12 @@ function VaultHome() {
 
   return (
     <div>
+      <BootSplash />
+      <RadarCashHero />
+      <UnlockStrip locked={locked} />
+
       <section className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
-          <div className="max-w-2xl">
-            <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
-              Independent Tennessee desk
-            </p>
-            <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight sm:text-5xl">
-              See which scratch-offs still have prizes left.
-            </h1>
-            <p className="mt-4 text-base leading-relaxed text-muted">
-              Volunteer Scratch Vault is a remaining-prize map for Tennessee
-              instant games. It does not sell tickets and it does not change
-              lottery odds. It shows which games still have a retail jackpot,
-              which still have mid-tier prizes posted, and which to skip.
-            </p>
-            {locked ? (
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <UnlockFullDeskButton>Unlock full desk</UnlockFullDeskButton>
-                <p className="text-sm text-faint">
-                  $4.99/mo or $49.99/year · 30-day free trial
-                </p>
-              </div>
-            ) : null}
-          </div>
-
-          <ul className="grid gap-3 sm:grid-cols-3">
-            <Advantage
-              title="Tennessee-only"
-              body="Built for this state’s games, price points, and Play It Again holdback — not a national dump of every lottery."
-            />
-            <Advantage
-              title="Medium prizes first"
-              body="Most tickets never hit the jackpot. We weight mid-tier remaining prizes heavier than printed odds."
-            />
-            <Advantage
-              title="Honest bust flags"
-              body="A posted “1 left” is treated as no retail top prize. Walk-away games are listed, not hidden."
-            />
-          </ul>
-
+        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
           <p className="max-w-3xl rounded-lg border border-line bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
             <span className="text-fg">Quick note: </span>
             18+ only. This is information, not a betting system. Remaining
@@ -214,15 +182,6 @@ function VaultHome() {
         )}
       </main>
     </div>
-  );
-}
-
-function Advantage({ title, body }: { title: string; body: string }) {
-  return (
-    <li className="rounded-lg border border-line bg-surface p-4">
-      <p className="font-display text-lg leading-snug">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
-    </li>
   );
 }
 

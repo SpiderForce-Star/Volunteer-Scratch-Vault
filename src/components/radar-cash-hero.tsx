@@ -1,0 +1,232 @@
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { GAMES, money } from "@/data/games";
+import { cashBlips } from "@/lib/heat";
+
+const SIZE = 360;
+const CX = SIZE / 2;
+const CY = SIZE / 2;
+
+export function RadarCashHero() {
+  const blips = cashBlips(GAMES, 8);
+  const [reduce, setReduce] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduce(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  return (
+    <section className="border-b border-line">
+      <div className="mx-auto grid max-w-[1120px] items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,400px)_1fr] lg:py-14">
+        <div className="mx-auto w-full max-w-[320px] min-w-0 sm:max-w-[360px] lg:max-w-none">
+          <RadarScope blips={blips} reduce={reduce} />
+          <p className="mt-3 overflow-hidden text-center font-mono text-[10px] tracking-[0.14em] text-faint uppercase">
+            Scanning TN retail · Mid-tier heat · {GAMES.length} games tracked
+          </p>
+        </div>
+
+        <div className="min-w-0">
+          <p className="font-mono text-xs tracking-[0.16em] text-gold uppercase">
+            Tennessee · independent desk
+          </p>
+          <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
+            See which tickets still have cash sitting in the field.
+          </h1>
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
+            Remaining mid-tier prizes, ranked. Not a lottery. Not a tip. 18+.
+            Remaining counts do not improve your odds.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              to="/pricing"
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg"
+            >
+              Start 1-month free trial
+            </Link>
+            <a
+              href="#desk"
+              className="inline-flex min-h-11 items-center justify-center px-2 text-sm text-sage underline underline-offset-4 hover:text-paper"
+            >
+              Preview the public desk
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RadarScope({
+  blips,
+  reduce,
+}: {
+  blips: ReturnType<typeof cashBlips>;
+  reduce: boolean;
+}) {
+  const rings = [56, 96, 136, 168];
+  return (
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      className="block h-auto w-full overflow-visible"
+      role="img"
+      aria-label="Tennessee remaining-prize radar"
+    >
+      <defs>
+        <radialGradient id="vsv-scope" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#141a16" />
+          <stop offset="100%" stopColor="#0b0f0c" />
+        </radialGradient>
+        <linearGradient id="vsv-beam" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#c4a574" stopOpacity="0" />
+          <stop offset="55%" stopColor="#7c9a72" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#c4a574" stopOpacity="0.38" />
+        </linearGradient>
+      </defs>
+
+      <circle cx={CX} cy={CY} r={174} fill="url(#vsv-scope)" stroke="#2a332c" />
+      {rings.map((r) => (
+        <circle
+          key={r}
+          cx={CX}
+          cy={CY}
+          r={r}
+          fill="none"
+          stroke="#7c9a72"
+          strokeOpacity="0.22"
+          strokeWidth="0.75"
+        />
+      ))}
+      {Array.from({ length: 36 }, (_, i) => {
+        const a = (i * 10 * Math.PI) / 180;
+        const inner = i % 3 === 0 ? 168 : 172;
+        return (
+          <line
+            key={i}
+            x1={CX + Math.cos(a) * inner}
+            y1={CY + Math.sin(a) * inner}
+            x2={CX + Math.cos(a) * 174}
+            y2={CY + Math.sin(a) * 174}
+            stroke="#c4a574"
+            strokeOpacity={i % 3 === 0 ? 0.35 : 0.16}
+            strokeWidth="0.8"
+          />
+        );
+      })}
+
+      <g
+        style={{
+          transformOrigin: `${CX}px ${CY}px`,
+          animation: reduce ? undefined : "vsv-radar-sweep 4.5s linear infinite",
+        }}
+      >
+        <path
+          d={`M ${CX} ${CY} L ${CX} ${CY - 170} A 170 170 0 0 1 ${CX + 92} ${CY - 143} Z`}
+          fill="url(#vsv-beam)"
+        />
+        <line
+          x1={CX}
+          y1={CY}
+          x2={CX}
+          y2={CY - 170}
+          stroke="#c4a574"
+          strokeOpacity="0.7"
+          strokeWidth="1.2"
+        />
+      </g>
+
+      {blips.map((blip) => {
+        const rad = ((blip.angle - 90) * Math.PI) / 180;
+        const r = blip.radius * 168;
+        const x = CX + Math.cos(rad) * r;
+        const y = CY + Math.sin(rad) * r;
+        const delay = reduce ? "0s" : `${(blip.angle / 360) * 4.5}s`;
+        return (
+          <g
+            key={blip.id}
+            transform={`translate(${x} ${y})`}
+            style={{
+              opacity: reduce ? 1 : undefined,
+              animation: reduce ? undefined : "vsv-blip-in 0.55s ease-out both",
+              animationDelay: delay,
+            }}
+          >
+            {!reduce ? (
+              <circle
+                r="10"
+                fill="none"
+                stroke="#c4a574"
+                strokeWidth="0.8"
+                style={{
+                  animation: "vsv-ping 1.1s ease-out both",
+                  animationDelay: delay,
+                  transformOrigin: "0 0",
+                }}
+              />
+            ) : null}
+            <rect
+              x="-11"
+              y="-7"
+              width="22"
+              height="14"
+              rx="1.5"
+              fill="#141a16"
+              stroke="#c4a574"
+              strokeWidth="0.9"
+            />
+            <text
+              y="3"
+              textAnchor="middle"
+              fill="#e8e2d6"
+              fontSize="7"
+              fontFamily="IBM Plex Mono, ui-monospace, monospace"
+            >
+              {money(blip.amount)}
+            </text>
+            <text
+              y="18"
+              textAnchor="middle"
+              fill="#7c9a72"
+              fontSize="6"
+              fontFamily="IBM Plex Mono, ui-monospace, monospace"
+            >
+              {blip.name}
+              {blip.remaining != null ? ` · ${blip.remaining}` : ""}
+            </text>
+          </g>
+        );
+      })}
+
+      <circle cx={CX} cy={CY} r="24" fill="#0b0f0c" stroke="#c4a574" strokeWidth="1.1" />
+      <rect
+        x={CX - 6}
+        y={CY - 9}
+        width="12"
+        height="10"
+        rx="1"
+        fill="none"
+        stroke="#c4a574"
+        strokeWidth="1.1"
+      />
+      <path
+        d={`M${CX - 4} ${CY - 9} v-4 a4 4 0 0 1 8 0 v4`}
+        fill="none"
+        stroke="#c4a574"
+        strokeWidth="1.1"
+      />
+      <text
+        x={CX}
+        y={CY + 18}
+        textAnchor="middle"
+        fill="#c4a574"
+        fontSize="6"
+        fontFamily="IBM Plex Mono, ui-monospace, monospace"
+      >
+        VSV
+      </text>
+    </svg>
+  );
+}

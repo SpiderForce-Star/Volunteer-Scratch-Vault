@@ -102,6 +102,76 @@ export function scoreGame(game: Game): HeatReport {
   };
 }
 
+export function catalogHeat(games: Game[]): {
+  grand: number;
+  medium: number;
+  busts: number;
+  games: number;
+} {
+  if (!games.length) return { grand: 0, medium: 0, busts: 0, games: 0 };
+  let grand = 0;
+  let medium = 0;
+  let busts = 0;
+  for (const game of games) {
+    const report = scoreGame(game);
+    grand += report.grand;
+    medium += report.medium;
+    if (report.bust) busts += 1;
+  }
+  return {
+    grand: grand / games.length,
+    medium: medium / games.length,
+    busts,
+    games: games.length,
+  };
+}
+
+export type CashBlip = {
+  id: number;
+  name: string;
+  amount: number;
+  remaining: number | null;
+  angle: number;
+  radius: number;
+};
+
+function shortGameName(name: string): string {
+  const trimmed = name.replace(/^\$[\d,]+(?:\s+)?/, "").trim();
+  if (trimmed.length <= 16) return trimmed || name;
+  return `${trimmed.slice(0, 15).trim()}…`;
+}
+
+/** Mid-tier (or cash-out) prizes placed on the radar scope. */
+export function cashBlips(games: Game[], count = 8): CashBlip[] {
+  const found: Omit<CashBlip, "angle" | "radius">[] = [];
+  for (const game of games) {
+    const mid =
+      game.tiers.find(
+        (tier) =>
+          tier.amount >= 200 &&
+          tier.amount <= 20_000 &&
+          tier.remaining != null &&
+          tier.remaining > 0,
+      ) ??
+      (game.topPrize <= 3_000 && game.tiers[0]?.remaining
+        ? game.tiers[0]
+        : null);
+    if (!mid || mid.remaining == null) continue;
+    found.push({
+      id: game.number,
+      name: shortGameName(game.name),
+      amount: mid.amount,
+      remaining: mid.remaining,
+    });
+  }
+  found.sort((a, b) => (b.remaining ?? 0) - (a.remaining ?? 0));
+  return found.slice(0, count).map((blip, i) => ({
+    ...blip,
+    angle: (i * 360) / Math.max(count, found.length || 1) + 18 + (blip.id % 17),
+    radius: 0.52 + (i % 3) * 0.1,
+  }));
+}
+
 export function bandLabel(band: HeatBand): string {
   if (band === "hot") return "Hot";
   if (band === "warm") return "Warm";
