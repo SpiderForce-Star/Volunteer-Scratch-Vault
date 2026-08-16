@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { GAMES, money } from "@/data/games";
+import { DESK_META } from "@/data/desk-meta";
 import { cashBlips } from "@/lib/heat";
+import { useDeskAlert } from "@/lib/use-desk-alert";
 
 const SIZE = 360;
 const CX = SIZE / 2;
@@ -9,6 +11,7 @@ const CY = SIZE / 2;
 
 export function RadarCashHero() {
   const blips = cashBlips(GAMES, 8);
+  const { unseen, markSeen, reviewDesk } = useDeskAlert();
   const [reduce, setReduce] = useState(false);
 
   useEffect(() => {
@@ -23,10 +26,35 @@ export function RadarCashHero() {
     <section className="border-b border-line">
       <div className="mx-auto grid max-w-[1120px] items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,400px)_1fr] lg:py-14">
         <div className="mx-auto w-full max-w-[320px] min-w-0 sm:max-w-[360px] lg:max-w-none">
-          <RadarScope blips={blips} reduce={reduce} />
-          <p className="mt-3 overflow-hidden text-center font-mono text-[10px] tracking-[0.14em] text-faint uppercase">
-            Scanning TN retail · Mid-tier heat · {GAMES.length} games tracked
+          <RadarScope blips={blips} reduce={reduce} alert={unseen} />
+          <p className="mt-3 overflow-hidden text-center font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
+            {unseen
+              ? `New desk drop · ${DESK_META.weekLabel}`
+              : `Scanning TN retail · ${GAMES.length} games · ${DESK_META.weekLabel}`}
           </p>
+          {unseen ? (
+            <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3 text-center">
+              <p className="text-sm leading-relaxed text-paper">
+                New remaining-prize counts are on the desk. Review the ranking.
+              </p>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <button
+                  type="button"
+                  onClick={() => reviewDesk()}
+                  className="inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
+                >
+                  Review desk
+                </button>
+                <button
+                  type="button"
+                  onClick={() => markSeen()}
+                  className="inline-flex min-h-11 items-center justify-center px-3 text-sm text-muted underline underline-offset-4 hover:text-paper"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="min-w-0">
@@ -63,9 +91,11 @@ export function RadarCashHero() {
 function RadarScope({
   blips,
   reduce,
+  alert,
 }: {
   blips: ReturnType<typeof cashBlips>;
   reduce: boolean;
+  alert: boolean;
 }) {
   const rings = [56, 96, 136, 168];
   return (
@@ -82,12 +112,37 @@ function RadarScope({
         </radialGradient>
         <linearGradient id="vsv-beam" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#c4a574" stopOpacity="0" />
-          <stop offset="55%" stopColor="#7c9a72" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#c4a574" stopOpacity="0.38" />
+          <stop offset="55%" stopColor="#7c9a72" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="#c4a574" stopOpacity="0.18" />
         </linearGradient>
       </defs>
 
       <circle cx={CX} cy={CY} r={174} fill="url(#vsv-scope)" stroke="#2a332c" />
+      {alert ? (
+        <>
+          <circle
+            cx={CX}
+            cy={CY}
+            r={176}
+            fill="none"
+            stroke="#c4a574"
+            style={{
+              animation: reduce ? undefined : "vsv-contact 1.6s ease-in-out infinite",
+            }}
+          />
+          <text
+            x={CX}
+            y={22}
+            textAnchor="middle"
+            fill="#c4a574"
+            fontSize="8"
+            fontFamily="IBM Plex Mono, ui-monospace, monospace"
+            letterSpacing="2"
+          >
+            CONTACT
+          </text>
+        </>
+      ) : null}
       {rings.map((r) => (
         <circle
           key={r}
@@ -120,7 +175,9 @@ function RadarScope({
       <g
         style={{
           transformOrigin: `${CX}px ${CY}px`,
-          animation: reduce ? undefined : "vsv-radar-sweep 4.5s linear infinite",
+          animation: reduce
+            ? undefined
+            : `vsv-radar-sweep ${alert ? "4s" : "5.5s"} linear infinite`,
         }}
       >
         <path
@@ -143,7 +200,8 @@ function RadarScope({
         const r = blip.radius * 168;
         const x = CX + Math.cos(rad) * r;
         const y = CY + Math.sin(rad) * r;
-        const delay = reduce ? "0s" : `${(blip.angle / 360) * 4.5}s`;
+        const period = alert ? 4 : 5.5;
+        const delay = reduce ? "0s" : `${(blip.angle / 360) * period}s`;
         return (
           <g
             key={blip.id}
@@ -193,8 +251,7 @@ function RadarScope({
               fontSize="6"
               fontFamily="IBM Plex Mono, ui-monospace, monospace"
             >
-              {blip.name}
-              {blip.remaining != null ? ` · ${blip.remaining}` : ""}
+              {blip.name} · {money(blip.amount)}
             </text>
           </g>
         );

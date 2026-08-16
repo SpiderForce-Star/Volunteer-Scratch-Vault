@@ -5,6 +5,7 @@ import { BandChip } from "@/components/ticket-card";
 import { TicketFace } from "@/components/ticket-face";
 import { LockedPanel } from "@/components/locked-panel";
 import { useAccess } from "@/lib/use-access";
+import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/game/$number")({
@@ -20,6 +21,8 @@ function GameDetail() {
   const locked = !paid;
 
   return (
+    <div>
+      <DeskAlertBanner />
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/"
@@ -129,6 +132,7 @@ function GameDetail() {
           18+ only. If gambling is a problem, call 1-800-GAMBLER.
         </p>
       </div>
+    </div>
   );
 }
 

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { useDeskAlert } from "@/lib/use-desk-alert";
 
 const NAV = [
   { to: "/" as const, hash: "desk", label: "Desk" },
@@ -10,6 +11,8 @@ const NAV = [
 ];
 
 export function SiteHeader() {
+  const { unseen, markSeen } = useDeskAlert();
+
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2.5 sm:gap-3 sm:px-6">
@@ -32,23 +35,40 @@ export function SiteHeader() {
           className="flex shrink-0 items-center justify-end gap-0.5"
         >
           {NAV.map((item) => {
+            const isDesk = item.label === "Desk";
             const hideOnMobile =
-              item.label === "Desk" ||
+              (item.label === "Desk" && !unseen) ||
               item.label === "Games" ||
               item.label === "Play responsibly";
             const className = [
-              "inline-flex min-h-11 items-center px-2.5 text-sm text-muted hover:text-fg sm:px-3",
+              "relative inline-flex min-h-11 items-center px-2.5 text-sm text-muted hover:text-fg sm:px-3",
               hideOnMobile ? "hidden md:inline-flex" : "",
             ]
               .filter(Boolean)
               .join(" ");
+            const pip =
+              isDesk && unseen ? (
+                <span
+                  className="ml-1.5 inline-block size-1.5 rounded-full bg-gold"
+                  aria-label="New desk information"
+                />
+              ) : null;
             return item.hash ? (
-              <a key={item.label} href={`${item.to}#${item.hash}`} className={className}>
+              <a
+                key={item.label}
+                href={`${item.to}#${item.hash}`}
+                className={className}
+                onClick={() => {
+                  if (isDesk && unseen) markSeen();
+                }}
+              >
                 {item.label}
+                {pip}
               </a>
             ) : (
               <Link key={item.label} to={item.to} className={className}>
                 {item.label}
+                {pip}
               </Link>
             );
           })}

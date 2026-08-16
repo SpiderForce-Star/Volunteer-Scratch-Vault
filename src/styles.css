@@ -87,6 +87,18 @@
   }
 }
 
+@keyframes vsv-contact {
+  0%,
+  100% {
+    opacity: 0.25;
+    stroke-width: 1.2;
+  }
+  50% {
+    opacity: 0.85;
+    stroke-width: 2.4;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

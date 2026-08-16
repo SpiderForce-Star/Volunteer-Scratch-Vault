@@ -15,6 +15,7 @@ import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { UnlockStrip } from "@/components/unlock-strip";
 import { BootSplash } from "@/components/boot-splash";
+import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { useAccess } from "@/lib/use-access";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,7 @@ function VaultHome() {
   return (
     <div>
       <BootSplash />
+      <DeskAlertBanner />
       <RadarCashHero />
       <UnlockStrip locked={locked} />
 
