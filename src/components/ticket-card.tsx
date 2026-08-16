@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { DATA_AS_OF, moneyFull, type Game } from "@/data/games";
+import { DATA_AS_OF, money, moneyFull, postedBook, type Game } from "@/data/games";
 import { bandLabel, type HeatReport } from "@/lib/heat";
 import { TicketFace } from "@/components/ticket-face";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ export function TicketCard({
 }) {
   const topLeft = heat.effectiveTop ?? heat.topRemaining;
   const midLeft = heat.midRemaining;
+  const book = postedBook(game);
 
   return (
     <Link
@@ -56,20 +57,26 @@ export function TicketCard({
 
         <dl className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
           <div>
-            <dt className="text-faint">Remaining top</dt>
+            <dt className="text-faint">Top still listed</dt>
             <dd className="font-mono text-sm text-fg">
-              {locked ? "••" : topLeft == null ? "—" : topLeft.toLocaleString()}
+              {book.topPool == null ? "—" : money(book.topPool)}
             </dd>
           </div>
           <div>
-            <dt className="text-faint">Remaining mid</dt>
+            <dt className="text-faint">Retail tops</dt>
             <dd className="font-mono text-sm text-fg">
-              {locked ? "••" : midLeft == null ? "—" : midLeft.toLocaleString()}
+              {topLeft == null ? "—" : topLeft.toLocaleString()}
             </dd>
           </div>
           <div>
-            <dt className="text-faint">Heat</dt>
-            <dd className="font-mono text-sm text-fg">{Math.round(heat.vault)}</dd>
+            <dt className="text-faint">Mid book</dt>
+            <dd className="font-mono text-sm text-fg">
+              {locked
+                ? "Vault"
+                : midLeft == null
+                  ? "—"
+                  : midLeft.toLocaleString()}
+            </dd>
           </div>
         </dl>
 

@@ -787,3 +787,40 @@ export function money(n: number): string {
 export function moneyFull(n: number): string {
   return `$${n.toLocaleString("en-US")}`;
 }
+
+
+export type PostedRow = {
+  amount: number;
+  remaining: number | null;
+  pool: number | null;
+};
+
+export type PostedBook = {
+  topPool: number | null;
+  knownPool: number;
+  knownTiers: number;
+  unpublishedTiers: number;
+  rows: PostedRow[];
+};
+
+/** Dollar value still listed in published remaining-prize tiers. */
+export function postedBook(game: Game): PostedBook {
+  const rows: PostedRow[] = game.tiers.map((tier) => ({
+    amount: tier.amount,
+    remaining: tier.remaining,
+    pool: tier.remaining == null ? null : tier.amount * tier.remaining,
+  }));
+  const known = rows.filter((row) => row.pool != null);
+  return {
+    topPool: rows[0]?.pool ?? null,
+    knownPool: known.reduce((sum, row) => sum + (row.pool ?? 0), 0),
+    knownTiers: known.length,
+    unpublishedTiers: rows.length - known.length,
+    rows,
+  };
+}
+
+export function retailTopPool(topPrize: number, effectiveTop: number | null): number | null {
+  if (effectiveTop == null) return null;
+  return effectiveTop * topPrize;
+}

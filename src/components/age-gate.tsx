@@ -6,15 +6,12 @@ import {
   persistAgeConfirmation,
 } from "@/lib/native";
 
-/**
- * First-launch 18+ gate for the native shells only.
- * Web visitors still see the existing in-page disclaimers.
- */
+/** First-visit 18+ confirmation on web and in the native shells. */
 export function AgeGate() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (isNativeApp() && !hasConfirmedAge()) setOpen(true);
+    if (!hasConfirmedAge()) setOpen(true);
   }, []);
 
   if (!open) return null;
@@ -68,10 +65,14 @@ export function AgeGate() {
             type="button"
             className="inline-flex min-h-12 items-center justify-center rounded-md border border-line px-4 text-sm text-muted hover:text-fg"
             onClick={() => {
-              void exitNativeApp();
+              if (isNativeApp()) {
+                void exitNativeApp();
+                return;
+              }
+              window.location.assign("https://www.ncpgambling.org/");
             }}
           >
-            Exit
+            I am under 18 — leave
           </button>
         </div>
       </div>

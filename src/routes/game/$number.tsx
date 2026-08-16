@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
-import { GAMES, DATA_AS_OF, money, moneyFull } from "@/data/games";
+import { GAMES, moneyFull } from "@/data/games";
 import { getDeskSnapshot } from "@/lib/desk";
 import type { HeatReport } from "@/lib/heat";
 import { BandChip } from "@/components/ticket-card";
 import { TicketFace } from "@/components/ticket-face";
-import { LockedPanel } from "@/components/locked-panel";
+import { PostedBookPanel } from "@/components/posted-book";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { pageHead } from "@/lib/site";
 import { ArrowLeft } from "lucide-react";
@@ -153,26 +153,7 @@ function GameDetail() {
           </p>
         ) : null}
 
-        <section className="mt-8">
-          <h2 className="font-display text-xl">Remaining prizes</h2>
-          <p className="mt-1 text-sm text-faint">
-            Source:{" "}
-            {game.source === "tn-remaining"
-              ? "Tennessee Lottery remaining-prizes table (three published tiers)"
-              : "Compiled public remaining counts"}
-            . Updated {DATA_AS_OF}. Not live store inventory.
-          </p>
-          {locked || !ready ? (
-            <div className="mt-4">
-              <LockedPanel
-                title="Full prize table is members-only"
-                teaser="Unlock remaining counts for every published tier."
-              />
-            </div>
-          ) : (
-            <PrizeTable game={game} />
-          )}
-        </section>
+        <PostedBookPanel game={game} heat={heat} locked={locked || !ready} />
 
         <p className="mt-10 pb-10 text-sm leading-relaxed text-faint">
           Independent analysis only. Not affiliated with the Tennessee Lottery.
@@ -182,26 +163,6 @@ function GameDetail() {
         </p>
       </div>
     </div>
-  );
-}
-
-function PrizeTable({ game }: { game: (typeof GAMES)[number] }) {
-  return (
-    <ul className="mt-4 divide-y divide-line border border-line">
-      {game.tiers.map((tier) => (
-        <li
-          key={tier.amount}
-          className="flex items-center justify-between px-4 py-3"
-        >
-          <span className="text-muted">{money(tier.amount)}</span>
-          <span className="font-mono text-fg">
-            {tier.remaining == null
-              ? "Not published"
-              : `${tier.remaining.toLocaleString()} left`}
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }
 

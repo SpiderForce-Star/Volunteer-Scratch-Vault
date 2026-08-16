@@ -129,7 +129,7 @@ function VaultHome() {
     return sortGames(pool, "medium", reports).slice(0, 3);
   }, [snap, catalog, tripFilter, reports]);
 
-  const publicList = locked ? list.slice(0, 3) : list;
+  const publicList = list;
   const prefLabel = pricePrefLabel(filter);
 
   return (
@@ -289,7 +289,7 @@ function VaultHome() {
       <main id="games" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <p className="text-sm text-faint">
-            {locked ? "3 public cards · full mid-tier table is Vault" : `${list.length} games`}
+            {locked ? `${list.length} games · mid-tier book is Vault` : `${list.length} games`}
           </p>
           <p className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-xs tracking-wide text-muted uppercase">
             Updated {DESK_META.weekLabel}. Not live store inventory.

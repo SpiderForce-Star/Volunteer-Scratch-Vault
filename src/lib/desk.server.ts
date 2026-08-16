@@ -1,6 +1,6 @@
 import { DESK_META } from "@/data/desk-meta";
 import { fullCatalog } from "@/data/games.full.server";
-import type { Game } from "@/data/games";
+import { money, type Game } from "@/data/games";
 import {
   buildDesk,
   cashBlips,
@@ -30,8 +30,18 @@ function redactReport(heat: HeatReport): HeatReport {
   };
 }
 
-function redactPickWhy(why: string): string {
-  return why.replace(/\d[\d,]*/g, "•");
+function guestWhy(game: Game, heat: HeatReport): string {
+  if (heat.bust || (heat.role === "jackpot" && heat.effectiveTop === 0)) {
+    return "No useful retail top on the posted counts";
+  }
+  if (heat.role === "cash-out" && heat.topRemaining != null) {
+    return `${heat.topRemaining.toLocaleString()} cash prizes still posted`;
+  }
+  if (heat.effectiveTop != null && heat.topRemaining != null) {
+    const pool = heat.topRemaining * game.topPrize;
+    return `${heat.effectiveTop} retail top · ${money(pool)} still listed up top`;
+  }
+  return "Published remaining count is thin";
 }
 
 async function subscriberIsPaid(userId: string | null): Promise<boolean> {
@@ -114,7 +124,7 @@ export async function buildDeskSnapshot(
               ...row.pick,
               game: redactGame(row.pick.game),
               heat: redactReport(row.pick.heat),
-              why: redactPickWhy(row.pick.why),
+              why: guestWhy(row.pick.game, row.pick.heat),
             },
           }
         : row,
