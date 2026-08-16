@@ -2,8 +2,15 @@ import { Link } from "@tanstack/react-router";
 import { money, type Game } from "@/data/games";
 import type { DeskPick, DeskReview } from "@/lib/heat";
 import { BandChip } from "@/components/ticket-card";
+import { LockedPanel } from "@/components/locked-panel";
 
-export function DeskReviewPanel({ desk }: { desk: DeskReview }) {
+export function DeskReviewPanel({
+  desk,
+  locked = false,
+}: {
+  desk: DeskReview;
+  locked?: boolean;
+}) {
   return (
     <section className="border-b border-line bg-surface/60">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
@@ -60,16 +67,34 @@ export function DeskReviewPanel({ desk }: { desk: DeskReview }) {
           <div>
             <h3 className="font-display text-lg">Medium-prize leaders</h3>
             <p className="mt-1 text-sm text-faint">
-              Where regular players still get paid.
+              Games with the most mid-tier prizes still posted.
             </p>
-            <PickList picks={desk.mediumLeaders} />
+            {locked ? (
+              <LockedPanel
+                title="Mid-tier leaders are members-only"
+                teaser="See which games still have the most mid-size prizes posted."
+              >
+                <PickList picks={desk.mediumLeaders} />
+              </LockedPanel>
+            ) : (
+              <PickList picks={desk.mediumLeaders} />
+            )}
           </div>
           <div>
             <h3 className="font-display text-lg">Skip these</h3>
             <p className="mt-1 text-sm text-faint">
               Effective retail top is gone, or mid-tier is drained.
             </p>
-            <PickList picks={desk.avoid} />
+            {locked ? (
+              <LockedPanel
+                title="Bust list is members-only"
+                teaser="Walk-away games stay listed — they are not hidden."
+              >
+                <PickList picks={desk.avoid} />
+              </LockedPanel>
+            ) : (
+              <PickList picks={desk.avoid} />
+            )}
           </div>
         </div>
 
@@ -78,7 +103,16 @@ export function DeskReviewPanel({ desk }: { desk: DeskReview }) {
           <p className="mt-1 text-sm text-faint">
             Highest-confidence rows from the Lottery remaining-prizes page.
           </p>
-          <PickList picks={desk.official} />
+          {locked ? (
+            <LockedPanel
+              title="Full three-tier table is members-only"
+              teaser="Unlock remaining top, mid, and low counts for every official row."
+            >
+              <PickList picks={desk.official} />
+            </LockedPanel>
+          ) : (
+            <PickList picks={desk.official} />
+          )}
         </div>
       </div>
     </section>

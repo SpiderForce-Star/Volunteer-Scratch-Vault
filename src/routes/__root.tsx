@@ -45,7 +45,7 @@ export const Route = createRootRoute({
       <body>
         <PreviewHostBridge />
         <AuthProvider>
-          <div className="min-h-svh bg-bg text-fg">
+          <div className="min-h-svh overflow-x-clip bg-bg text-fg">
             <SiteHeader />
             <Outlet />
             <SiteFooter />

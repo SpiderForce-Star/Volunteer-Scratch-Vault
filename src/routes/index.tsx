@@ -12,6 +12,8 @@ import {
 import { TicketCard } from "@/components/ticket-card";
 import { DeskReviewPanel } from "@/components/desk-review";
 import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
+import { UnlockFullDeskButton } from "@/components/locked-panel";
+import { useAccess } from "@/lib/use-access";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -27,8 +29,9 @@ const FILTERS: { id: PriceFilter; label: string }[] = [
 ];
 
 const SORTS: { id: SortKey; label: string }[] = [
-  { id: "heat", label: "Combined heat" },
-  { id: "medium", label: "Medium prizes" },
+  { id: "heat", label: "Best overall" },
+  { id: "medium", label: "Best mid-tier" },
+  { id: "safest", label: "Safest (avoid busts)" },
   { id: "grand", label: "Grand prizes" },
   { id: "price", label: "Price" },
   { id: "name", label: "Name" },
@@ -38,6 +41,8 @@ function VaultHome() {
   const [filter, setFilter] = useState<PriceFilter>("all");
   const [sort, setSort] = useState<SortKey>("heat");
   const [query, setQuery] = useState("");
+  const { paid } = useAccess();
+  const locked = !paid;
 
   const reports = useMemo(() => {
     const map = new Map(GAMES.map((g) => [g.number, scoreGame(g)]));
@@ -73,8 +78,16 @@ function VaultHome() {
               Volunteer Scratch Vault is a remaining-prize map for Tennessee
               instant games. It does not sell tickets and it does not change
               lottery odds. It shows which games still have a retail jackpot,
-              which still pay mid-size prizes, and which to skip.
+              which still have mid-tier prizes posted, and which to skip.
             </p>
+            {locked ? (
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <UnlockFullDeskButton>Unlock full desk</UnlockFullDeskButton>
+                <p className="text-sm text-faint">
+                  $4.99/mo or $49.99/year · 30-day free trial
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <ul className="grid gap-3 sm:grid-cols-3">
@@ -126,7 +139,7 @@ function VaultHome() {
       </section>
 
       <div id="desk">
-        <DeskReviewPanel desk={desk} />
+        <DeskReviewPanel desk={desk} locked={locked} />
       </div>
 
       <div className="sticky top-[57px] z-10 border-b border-line bg-bg/95 backdrop-blur-sm">
@@ -179,7 +192,12 @@ function VaultHome() {
       </div>
 
       <main id="games" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <p className="mb-6 text-sm text-faint">{list.length} games</p>
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <p className="text-sm text-faint">{list.length} games</p>
+          <p className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-xs tracking-wide text-muted uppercase">
+            Updated {DATA_AS_OF}. Not live store inventory.
+          </p>
+        </div>
         {list.length === 0 ? (
           <p className="text-muted">No games match that filter.</p>
         ) : (
@@ -189,6 +207,7 @@ function VaultHome() {
                 key={game.number}
                 game={game}
                 heat={reports.get(game.number)!}
+                locked={locked}
               />
             ))}
           </div>

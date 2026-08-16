@@ -10,14 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as GameNumberRouteImport } from './routes/game/$number'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
+import { Route as GameNumberRouteImport } from './routes/game/$number'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DisclaimerRoute = DisclaimerRouteImport.update({
@@ -25,14 +34,14 @@ const DisclaimerRoute = DisclaimerRouteImport.update({
   path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GameNumberRoute = GameNumberRouteImport.update({
-  id: '/game/$number',
-  path: '/game/$number',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BillingSuccessRoute = BillingSuccessRouteImport.update({
@@ -40,43 +49,102 @@ const BillingSuccessRoute = BillingSuccessRouteImport.update({
   path: '/billing/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GameNumberRoute = GameNumberRouteImport.update({
+  id: '/game/$number',
+  path: '/game/$number',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
-  '/game/$number': typeof GameNumberRoute
   '/billing/success': typeof BillingSuccessRoute
+  '/game/$number': typeof GameNumberRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
-  '/game/$number': typeof GameNumberRoute
   '/billing/success': typeof BillingSuccessRoute
+  '/game/$number': typeof GameNumberRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
-  '/game/$number': typeof GameNumberRoute
   '/billing/success': typeof BillingSuccessRoute
+  '/game/$number': typeof GameNumberRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/disclaimer' | '/pricing' | '/game/$number' | '/billing/success'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/disclaimer'
+    | '/login'
+    | '/pricing'
+    | '/billing/success'
+    | '/game/$number'
+    | '/api/auth/$'
+    | '/api/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/disclaimer' | '/pricing' | '/game/$number' | '/billing/success'
-  id: '__root__' | '/' | '/disclaimer' | '/pricing' | '/game/$number' | '/billing/success'
+  to:
+    | '/'
+    | '/account'
+    | '/disclaimer'
+    | '/login'
+    | '/pricing'
+    | '/billing/success'
+    | '/game/$number'
+    | '/api/auth/$'
+    | '/api/stripe/webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/account'
+    | '/disclaimer'
+    | '/login'
+    | '/pricing'
+    | '/billing/success'
+    | '/game/$number'
+    | '/api/auth/$'
+    | '/api/stripe/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   DisclaimerRoute: typeof DisclaimerRoute
+  LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
-  GameNumberRoute: typeof GameNumberRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
+  GameNumberRoute: typeof GameNumberRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -88,11 +156,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/disclaimer': {
       id: '/disclaimer'
       path: '/disclaimer'
       fullPath: '/disclaimer'
       preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -102,13 +184,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/game/$number': {
-      id: '/game/$number'
-      path: '/game/$number'
-      fullPath: '/game/$number'
-      preLoaderRoute: typeof GameNumberRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/billing/success': {
       id: '/billing/success'
       path: '/billing/success'
@@ -116,15 +191,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/game/$number': {
+      id: '/game/$number'
+      path: '/game/$number'
+      fullPath: '/game/$number'
+      preLoaderRoute: typeof GameNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   DisclaimerRoute: DisclaimerRoute,
+  LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
-  GameNumberRoute: GameNumberRoute,
   BillingSuccessRoute: BillingSuccessRoute,
+  GameNumberRoute: GameNumberRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
