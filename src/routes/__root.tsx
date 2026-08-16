@@ -24,7 +24,7 @@ export const Route = createRootRoute({
           "Independent Tennessee scratch-off heat map. Grand prizes, medium prizes, and bust games from public remaining-prize data.",
       },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
-      { name: "theme-color", content: "#0a0a0b" },
+      { name: "theme-color", content: "#0B0F0C" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/og.jpg" },

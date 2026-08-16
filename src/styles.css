@@ -1,23 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0a0a0b;
-  --color-surface: #121214;
-  --color-raised: #1a1a1e;
-  --color-fg: #f1f1f2;
-  --color-muted: #9a9aa3;
-  --color-faint: #6d6d76;
-  --color-line: #2a2a30;
-  --color-accent: #d5d8de;
-  --color-accent-fg: #0a0a0b;
-  --color-hot: #f3c15b;
-  --color-hot-ink: #2a1a05;
-  --color-warm: #e08a2c;
-  --color-warm-ink: #231407;
-  --color-cool: #8b9aab;
-  --color-cool-ink: #12161c;
-  --color-bust: #e07060;
-  --color-bust-ink: #2a0f0c;
+  --color-bg: #0b0f0c;
+  --color-surface: #101510;
+  --color-raised: #141a16;
+  --color-fg: #e8e2d6;
+  --color-paper: #e8e2d6;
+  --color-muted: #9aa394;
+  --color-faint: #6d7668;
+  --color-line: #2a332c;
+  --color-gold: #c4a574;
+  --color-sage: #7c9a72;
+  --color-danger: #c45c4a;
+  --color-accent: #c4a574;
+  --color-accent-fg: #0b0f0c;
+  --color-hot: #c4a574;
+  --color-hot-ink: #1c1810;
+  --color-warm: #c4a574;
+  --color-warm-ink: #1c1810;
+  --color-cool: #7c9a72;
+  --color-cool-ink: #121610;
+  --color-bust: #c45c4a;
+  --color-bust-ink: #1c100e;
   --font-display: "Fraunces", "Times New Roman", serif;
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -46,11 +50,49 @@
   }
 }
 
+@keyframes vsv-radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vsv-blip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes vsv-ping {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes vsv-gauge-in {
+  from {
+    stroke-dashoffset: 120;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

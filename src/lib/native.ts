@@ -45,13 +45,25 @@ export async function initNativeChrome(): Promise<void> {
   try {
     const { StatusBar, Style } = await import("@capacitor/status-bar");
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#0a0a0b" });
+    await StatusBar.setBackgroundColor({ color: "#0B0F0C" });
   } catch {
     /* plugin missing in web preview */
   }
   try {
     const { SplashScreen } = await import("@capacitor/splash-screen");
     await SplashScreen.hide();
+  } catch {
+    /* ignore */
+  }
+  try {
+    const { App } = await import("@capacitor/app");
+    await App.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) {
+        void import("@capacitor/splash-screen").then(({ SplashScreen }) =>
+          SplashScreen.hide(),
+        );
+      }
+    });
   } catch {
     /* ignore */
   }

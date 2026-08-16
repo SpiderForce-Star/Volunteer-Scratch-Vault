@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
   appId: "com.webbspinnervisions.volunteerscratchvault",
   appName: "Volunteer Scratch Vault",
   webDir: "dist",
-  backgroundColor: "#0a0a0b",
+  backgroundColor: "#0B0F0C",
   ios: {
     contentInset: "automatic",
     preferredContentMode: "mobile",
@@ -21,18 +21,21 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: false,
-    backgroundColor: "#0a0a0b",
+    backgroundColor: "#0B0F0C",
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 400,
+      launchShowDuration: 1800,
       launchAutoHide: true,
-      backgroundColor: "#0a0a0b",
+      backgroundColor: "#0B0F0C",
+      androidScaleType: "CENTER_CROP",
       showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       style: "DARK",
-      backgroundColor: "#0a0a0b",
+      backgroundColor: "#0B0F0C",
     },
   },
 };
