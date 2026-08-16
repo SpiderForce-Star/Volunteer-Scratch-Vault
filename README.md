@@ -25,7 +25,11 @@ Printed overall odds are not used to rank tickets. Full disclaimer and problem-g
 
 React 19 · TypeScript · Vite · TanStack Start · Tailwind v4
 
-## Local
+## Native / stores
+
+Capacitor 6 shells and the App Store / Play checklist live in
+[`README-STORE.md`](README-STORE.md). Stripe checkout stays on the website.
+Native IAP is the next slice.
 
 ```bash
 npm install
