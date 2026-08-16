@@ -3,6 +3,7 @@ import { authEnabled } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useDeskAlert } from "@/lib/use-desk-alert";
 import { TrialCta } from "@/components/trial-cta";
+import { SpiderMark } from "@/components/mechanical-spider";
 import { useAccess } from "@/lib/use-access";
 
 const NAV = [
@@ -74,6 +75,7 @@ export function SiteHeader() {
               </Link>
             );
           })}
+          <StudioLink />
           <HeaderAuth />
           <HeaderTrial />
         </nav>
@@ -120,5 +122,21 @@ function HeaderAuth() {
     >
       Account
     </Link>
+  );
+}
+
+
+function StudioLink() {
+  return (
+    <a
+      href="https://webbspinnervisions.net"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-11 items-center gap-1.5 px-2.5 text-sm text-muted hover:text-gold sm:px-3"
+    >
+      <SpiderMark className="size-4 text-gold" />
+      <span className="hidden lg:inline">Webb Spinner Visions</span>
+      <span className="sr-only lg:hidden">Webb Spinner Visions</span>
+    </a>
   );
 }

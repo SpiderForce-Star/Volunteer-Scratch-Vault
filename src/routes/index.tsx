@@ -15,7 +15,6 @@ import { DeskReviewPanel } from "@/components/desk-review";
 import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
 import { RadarCashHero } from "@/components/radar-cash-hero";
 import { UnlockStrip } from "@/components/unlock-strip";
-import { BootSplash } from "@/components/boot-splash";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { TripCard } from "@/components/trip-card";
 import { TrialCta } from "@/components/trial-cta";
@@ -134,7 +133,6 @@ function VaultHome() {
 
   return (
     <div>
-      <BootSplash />
       <p className="border-b border-line px-4 py-2 text-center font-mono text-[10px] tracking-[0.16em] text-faint uppercase sm:px-6">
         {snap?.weekLabel ?? DESK_META.weekLabel} · {snap?.gameCount ?? GAMES.length} TN games tracked
       </p>
