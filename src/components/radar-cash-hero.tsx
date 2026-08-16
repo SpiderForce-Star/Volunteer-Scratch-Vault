@@ -98,17 +98,19 @@ export function RadarCashHero({
               : "Which tickets still have mid-tier cash posted?"}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            Review what’s still posted. Skip the drained ones. Then put the
-            phone away. Not a lottery. 18+. Remaining counts do not improve
-            your odds.
+            See what’s still posted at your price. Skip the drained ones. Then
+            put the phone away.
+          </p>
+          <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
+            18+ · Independent desk · Remaining counts do not improve odds
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             {paid ? null : <TrialCta />}
             <a
-              href="#desk"
+              href="#skip"
               className="inline-flex min-h-11 items-center justify-center px-2 text-sm text-sage underline underline-offset-4 hover:text-paper"
             >
-              Preview the public desk
+              See the skip list
             </a>
           </div>
         </div>

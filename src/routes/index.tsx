@@ -3,7 +3,6 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { GAMES, money } from "@/data/games";
 import { DESK_META } from "@/data/desk-meta";
 import {
-  bandLabel,
   buildDesk,
   inPriceFilter,
   scoreGame,
@@ -11,7 +10,7 @@ import {
   type PriceFilter,
   type SortKey,
 } from "@/lib/heat";
-import { TicketCard } from "@/components/ticket-card";
+import { BandChip, TicketCard } from "@/components/ticket-card";
 import { DeskReviewPanel } from "@/components/desk-review";
 import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
 import { RadarCashHero } from "@/components/radar-cash-hero";
@@ -143,21 +142,18 @@ function VaultHome() {
                   params={{ number: String(row.pick.game.number) }}
                   className="min-h-11 rounded-lg border border-line bg-surface p-4 hover:border-gold/50"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs text-gold">{row.price}</span>
-                    <span className="font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
-                      {bandLabel(row.pick.heat.band)}
-                    </span>
+                    <BandChip band={row.pick.heat.band} />
                   </div>
                   <p className="mt-2 font-display text-lg leading-snug">
                     {row.pick.game.name}
                   </p>
-                  <p className="mt-1 font-mono text-xs text-faint">
-                    Mid{" "}
-                    {row.pick.heat.midRemaining == null
-                      ? "—"
-                      : row.pick.heat.midRemaining.toLocaleString()}{" "}
-                    still posted · top {money(row.pick.game.topPrize)}
+                  <p className="mt-1 text-xs leading-relaxed text-muted">
+                    {row.pick.why}
+                  </p>
+                  <p className="mt-1 font-mono text-[10px] text-faint">
+                    Top {money(row.pick.game.topPrize)}
                   </p>
                 </Link>
               ) : (
@@ -173,7 +169,7 @@ function VaultHome() {
         </div>
       </section>
 
-      <section className="border-b border-line">
+      <section id="skip" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
             Skip these
