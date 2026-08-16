@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createCheckoutSession } from "@/lib/billing";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useAccess } from "@/lib/use-access";
+import { isNativeApp } from "@/lib/native";
 import {
   Accordion,
   AccordionContent,
@@ -30,6 +31,12 @@ function PricingPage() {
 
   const startCheckout = async (plan: "monthly" | "annual") => {
     if (isPending) return;
+    if (isNativeApp()) {
+      setError(
+        "Full Access on iOS and Android is sold through the App Store and Google Play, not Stripe.",
+      );
+      return;
+    }
     if (!user) {
       window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
       return;
@@ -77,6 +84,14 @@ function PricingPage() {
         </p>
       ) : null}
 
+      {isNativeApp() ? (
+        <p className="mt-6 text-center text-sm text-muted">
+          On iOS and Android, Full Access is $4.99/month or $49.99/year with a
+          1-month free trial through the App Store or Google Play. Stripe
+          checkout stays on the website.
+        </p>
+      ) : null}
+
       {paid ? (
         <p className="mt-6 text-center text-sm text-hot">
           Your desk is already unlocked.{" "}
@@ -103,11 +118,15 @@ function PricingPage() {
           </ul>
           <button
             type="button"
-            disabled={loading !== null || paid}
+            disabled={loading !== null || paid || isNativeApp()}
             onClick={() => startCheckout("monthly")}
             className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
           >
-            {loading === "monthly" ? "Starting trial…" : "Start 30-day free trial"}
+            {isNativeApp()
+              ? "App Store / Play Billing next"
+              : loading === "monthly"
+                ? "Starting trial…"
+                : "Start 30-day free trial"}
           </button>
         </div>
 
@@ -129,11 +148,15 @@ function PricingPage() {
           </ul>
           <button
             type="button"
-            disabled={loading !== null || paid}
+            disabled={loading !== null || paid || isNativeApp()}
             onClick={() => startCheckout("annual")}
             className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
           >
-            {loading === "annual" ? "Starting trial…" : "Start free trial · Annual"}
+            {isNativeApp()
+              ? "App Store / Play Billing next"
+              : loading === "annual"
+                ? "Starting trial…"
+                : "Start free trial · Annual"}
           </button>
         </div>
       </div>

@@ -35,6 +35,12 @@ export function SiteFooter() {
                 Full disclaimer & help resources
               </Link>
               <Link
+                to="/privacy"
+                className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+              >
+                Privacy
+              </Link>
+              <Link
                 to="/pricing"
                 className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
               >

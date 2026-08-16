@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { signOut } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { createPortalSession, getBillingSummary } from "@/lib/billing";
+import { isNativeApp } from "@/lib/native";
 import {
   formatBillingDate,
   planLabel,
@@ -90,7 +91,13 @@ function AccountPage() {
         ) : null}
 
         <div className="mt-6 flex flex-col gap-3">
-          {paid && summary?.hasCustomer ? (
+          {isNativeApp() ? (
+            <p className="rounded-md border border-line bg-bg px-3 py-3 text-sm text-muted">
+              On iOS and Android, Full Access is sold through the App Store and
+              Google Play — not Stripe. Native in-app purchase lands in the next
+              store build.
+            </p>
+          ) : paid && summary?.hasCustomer ? (
             <button
               type="button"
               disabled={portalBusy}
@@ -114,6 +121,26 @@ function AccountPage() {
           >
             Sign out
           </button>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-line bg-surface p-6">
+        <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
+          Settings
+        </p>
+        <div className="mt-3 flex flex-col">
+          <Link
+            to="/privacy"
+            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+          >
+            Privacy
+          </Link>
+          <Link
+            to="/disclaimer"
+            className="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-2 hover:text-fg"
+          >
+            Disclaimer & help
+          </Link>
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
 import { Route as GameNumberRouteImport } from './routes/game/$number'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -44,6 +45,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BillingSuccessRoute = BillingSuccessRouteImport.update({
   id: '/billing/success',
   path: '/billing/success',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/disclaimer': typeof DisclaimerRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/disclaimer': typeof DisclaimerRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/disclaimer': typeof DisclaimerRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/login'
     | '/pricing'
+    | '/privacy'
     | '/billing/success'
     | '/game/$number'
     | '/api/auth/$'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/login'
     | '/pricing'
+    | '/privacy'
     | '/billing/success'
     | '/game/$number'
     | '/api/auth/$'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/disclaimer'
     | '/login'
     | '/pricing'
+    | '/privacy'
     | '/billing/success'
     | '/game/$number'
     | '/api/auth/$'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   DisclaimerRoute: typeof DisclaimerRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
   GameNumberRoute: typeof GameNumberRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/billing/success': {
       id: '/billing/success'
       path: '/billing/success'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisclaimerRoute: DisclaimerRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   BillingSuccessRoute: BillingSuccessRoute,
   GameNumberRoute: GameNumberRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

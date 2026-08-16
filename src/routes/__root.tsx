@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { AgeGate } from "@/components/age-gate";
+import { initNativeChrome } from "@/lib/native";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Volunteer Scratch Vault";
@@ -28,9 +31,10 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192.png" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap",
@@ -45,14 +49,25 @@ export const Route = createRootRoute({
       <body>
         <PreviewHostBridge />
         <AuthProvider>
-          <div className="min-h-svh overflow-x-clip bg-bg text-fg">
-            <SiteHeader />
-            <Outlet />
-            <SiteFooter />
-          </div>
+          <NativeRoot />
         </AuthProvider>
         <Scripts />
       </body>
     </html>
   ),
 });
+
+function NativeRoot() {
+  useEffect(() => {
+    void initNativeChrome();
+  }, []);
+
+  return (
+    <div className="min-h-svh overflow-x-clip bg-bg pt-[env(safe-area-inset-top)] text-fg">
+      <SiteHeader />
+      <Outlet />
+      <SiteFooter />
+      <AgeGate />
+    </div>
+  );
+}
