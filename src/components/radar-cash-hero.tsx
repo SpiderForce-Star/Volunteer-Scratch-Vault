@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { GAMES, money } from "@/data/games";
 import { DESK_META } from "@/data/desk-meta";
 import { cashBlips } from "@/lib/heat";
 import { useDeskAlert } from "@/lib/use-desk-alert";
+import { deskNotifyEnabled } from "@/lib/desk-alert";
+import { TrialCta } from "@/components/trial-cta";
+import { useAccess } from "@/lib/use-access";
+import { pricePrefLabel } from "@/lib/price-pref";
+import type { PriceFilter } from "@/lib/heat";
 
 const SIZE = 360;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 
-export function RadarCashHero() {
+export function RadarCashHero({
+  priceFilter = "all",
+}: {
+  priceFilter?: PriceFilter;
+}) {
   const blips = cashBlips(GAMES, 8);
   const { unseen, markSeen, reviewDesk } = useDeskAlert();
+  const { paid } = useAccess();
+  const priceLabel = pricePrefLabel(priceFilter);
   const [reduce, setReduce] = useState(false);
 
   useEffect(() => {
@@ -21,6 +31,27 @@ export function RadarCashHero() {
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, []);
+
+  useEffect(() => {
+    if (!unseen || reduce || !deskNotifyEnabled()) return;
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.value = 880;
+      gain.gain.value = 0.04;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      window.setTimeout(() => {
+        osc.stop();
+        void ctx.close();
+      }, 120);
+    } catch {
+      /* default mute if audio is blocked */
+    }
+  }, [unseen, reduce]);
 
   return (
     <section className="border-b border-line">
@@ -62,19 +93,17 @@ export function RadarCashHero() {
             Tennessee · independent desk
           </p>
           <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
-            See which tickets still have cash sitting in the field.
+            {priceLabel
+              ? `Which ${priceLabel} still has mid-tier cash posted?`
+              : "Which tickets still have mid-tier cash posted?"}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            Remaining mid-tier prizes, ranked. Not a lottery. Not a tip. 18+.
-            Remaining counts do not improve your odds.
+            Review what’s still posted. Skip the drained ones. Then put the
+            phone away. Not a lottery. 18+. Remaining counts do not improve
+            your odds.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              to="/pricing"
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-5 text-sm font-medium text-accent-fg"
-            >
-              Start 1-month free trial
-            </Link>
+            {paid ? null : <TrialCta />}
             <a
               href="#desk"
               className="inline-flex min-h-11 items-center justify-center px-2 text-sm text-sage underline underline-offset-4 hover:text-paper"

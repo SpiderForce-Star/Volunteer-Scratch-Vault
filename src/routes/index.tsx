@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { DATA_AS_OF, GAMES } from "@/data/games";
+import { useEffect, useMemo, useState } from "react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { GAMES, money } from "@/data/games";
+import { DESK_META } from "@/data/desk-meta";
 import {
+  bandLabel,
   buildDesk,
   inPriceFilter,
   scoreGame,
@@ -16,7 +18,10 @@ import { RadarCashHero } from "@/components/radar-cash-hero";
 import { UnlockStrip } from "@/components/unlock-strip";
 import { BootSplash } from "@/components/boot-splash";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
+import { TripCard } from "@/components/trip-card";
+import { TrialCta } from "@/components/trial-cta";
 import { useAccess } from "@/lib/use-access";
+import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -42,10 +47,34 @@ const SORTS: { id: SortKey; label: string }[] = [
 
 function VaultHome() {
   const [filter, setFilter] = useState<PriceFilter>("all");
-  const [sort, setSort] = useState<SortKey>("heat");
+  const [sort, setSort] = useState<SortKey>("safest");
   const [query, setQuery] = useState("");
   const { paid } = useAccess();
   const locked = !paid;
+  const [lateNight, setLateNight] = useState(false);
+
+  useEffect(() => {
+    const saved = readPricePref();
+    if (saved) setFilter(saved);
+    try {
+      const hour = Number(
+        new Intl.DateTimeFormat("en-US", {
+          hour: "numeric",
+          hour12: false,
+          timeZone: "America/Chicago",
+        }).format(new Date()),
+      );
+      setLateNight(hour >= 23 || hour < 6);
+    } catch {
+      const hour = new Date().getHours();
+      setLateNight(hour >= 23 || hour < 6);
+    }
+  }, []);
+
+  const setPrice = (next: PriceFilter) => {
+    setFilter(next);
+    writePricePref(next);
+  };
 
   const reports = useMemo(() => {
     const map = new Map(GAMES.map((g) => [g.number, scoreGame(g)]));
@@ -66,47 +95,114 @@ function VaultHome() {
     return sortGames(filtered, sort, reports);
   }, [filter, sort, query, reports]);
 
+  const tripFilter: PriceFilter = filter === "all" ? "10" : filter;
+  const tripGames = useMemo(() => {
+    const pool = GAMES.filter((g) => inPriceFilter(g, tripFilter));
+    return sortGames(pool, "medium", reports).slice(0, 3);
+  }, [tripFilter, reports]);
+
+  const publicList = locked ? list.slice(0, 3) : list;
+  const prefLabel = pricePrefLabel(filter);
+
   return (
     <div>
       <BootSplash />
+      <p className="border-b border-line px-4 py-2 text-center font-mono text-[10px] tracking-[0.16em] text-faint uppercase sm:px-6">
+        {DESK_META.weekLabel} · {GAMES.length} TN games tracked
+      </p>
+      {lateNight ? (
+        <p className="border-b border-line bg-raised/50 px-4 py-3 text-center text-sm text-muted sm:px-6">
+          Desk is for store hours. Review now, buy later if you still want to.
+          18+.
+        </p>
+      ) : null}
       <DeskAlertBanner />
-      <RadarCashHero />
-      <UnlockStrip locked={locked} />
+      <RadarCashHero priceFilter={filter} />
 
       <section className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
-          <p className="max-w-3xl rounded-lg border border-line bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
-            <span className="text-fg">Quick note: </span>
-            18+ only. This is information, not a betting system. Remaining
-            counts do not make you more likely to win. If play stops being
-            entertainment, call or text{" "}
-            <a className="underline underline-offset-2" href="tel:18005224700">
-              1-800-GAMBLER
-            </a>
-            .
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+            {prefLabel ? `Your ${prefLabel} desk` : "Best still-posted by price"}
           </p>
-
-          <div className="max-w-3xl">
-            <p className="mb-3 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-              Full disclaimer
-            </p>
-            <DisclaimerLead />
-            <div className="mt-4">
-              <DisclaimerPanel />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-6 text-sm">
-            <Stat label="Games tracked" value={String(desk.stats.games)} />
-            <Stat
-              label="Retail jackpots"
-              value={String(desk.stats.retailJackpots)}
-            />
-            <Stat label="Avoid" value={String(desk.stats.busts)} />
-            <Stat label="Data as of" value={DATA_AS_OF} />
+          <h2 className="mt-2 font-display text-2xl tracking-tight">
+            Highest remaining-prize heat at each price
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {desk.byPrice.map((row) =>
+              row.pick ? (
+                <Link
+                  key={row.price}
+                  to="/game/$number"
+                  params={{ number: String(row.pick.game.number) }}
+                  className="min-h-11 rounded-lg border border-line bg-surface p-4 hover:border-gold/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-gold">{row.price}</span>
+                    <span className="font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
+                      {bandLabel(row.pick.heat.band)}
+                    </span>
+                  </div>
+                  <p className="mt-2 font-display text-lg leading-snug">
+                    {row.pick.game.name}
+                  </p>
+                  <p className="mt-1 font-mono text-xs text-faint">
+                    Mid{" "}
+                    {row.pick.heat.midRemaining == null
+                      ? "—"
+                      : row.pick.heat.midRemaining.toLocaleString()}{" "}
+                    still posted · top {money(row.pick.game.topPrize)}
+                  </p>
+                </Link>
+              ) : (
+                <div
+                  key={row.price}
+                  className="rounded-lg border border-line p-4 text-sm text-faint"
+                >
+                  {row.price}: nothing still posted
+                </div>
+              ),
+            )}
           </div>
         </div>
       </section>
+
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
+            Skip these
+          </p>
+          <h2 className="mt-2 font-display text-2xl tracking-tight">
+            Don’t spend a book on a drained game
+          </h2>
+          <ul className="mt-4 divide-y divide-line border border-line">
+            {desk.avoid.slice(0, 3).map((p) => (
+              <li key={p.game.number}>
+                <Link
+                  to="/game/$number"
+                  params={{ number: String(p.game.number) }}
+                  className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
+                >
+                  <span className="truncate text-sm">
+                    ${p.game.price} · {p.game.name}
+                  </span>
+                  <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
+                    Skip
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <TripCard
+        games={tripGames}
+        reports={reports}
+        filter={tripFilter}
+        locked={locked}
+      />
+
+      <UnlockStrip locked={locked} />
 
       <div id="desk">
         <DeskReviewPanel desk={desk} locked={locked} />
@@ -119,11 +215,11 @@ function VaultHome() {
               <button
                 key={f.id}
                 type="button"
-                onClick={() => setFilter(f.id)}
+                onClick={() => setPrice(f.id)}
                 className={cn(
-                  "min-h-11 rounded-md px-3 text-sm",
+                  "min-h-11 min-w-11 rounded-md px-3 text-sm",
                   filter === f.id
-                    ? "bg-accent text-accent-fg"
+                    ? "bg-gold text-accent-fg"
                     : "bg-surface text-muted hover:text-fg",
                 )}
               >
@@ -163,16 +259,18 @@ function VaultHome() {
 
       <main id="games" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <p className="text-sm text-faint">{list.length} games</p>
+          <p className="text-sm text-faint">
+            {locked ? "3 public cards · full mid-tier table is Vault" : `${list.length} games`}
+          </p>
           <p className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-xs tracking-wide text-muted uppercase">
-            Updated {DATA_AS_OF}. Not live store inventory.
+            Updated {DESK_META.weekLabel}. Not live store inventory.
           </p>
         </div>
-        {list.length === 0 ? (
+        {publicList.length === 0 ? (
           <p className="text-muted">No games match that filter.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((game) => (
+            {publicList.map((game) => (
               <TicketCard
                 key={game.number}
                 game={game}
@@ -182,18 +280,29 @@ function VaultHome() {
             ))}
           </div>
         )}
-      </main>
-    </div>
-  );
-}
+        {locked ? (
+          <div className="mt-6 flex flex-col items-start gap-3 rounded-lg border border-line bg-surface p-5">
+            <p className="text-sm text-muted">
+              Full mid-tier table is in the Vault. Review before you buy.
+            </p>
+            <TrialCta />
+          </div>
+        ) : (
+          <p className="mt-8 text-sm text-muted">
+            You’re done. Put the phone away.
+          </p>
+        )}
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="font-mono text-xs tracking-wide text-faint uppercase">
-        {label}
-      </p>
-      <p className="mt-1 font-display text-xl text-fg">{value}</p>
+        <div className="mt-10 max-w-3xl">
+          <p className="mb-3 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
+            Full disclaimer
+          </p>
+          <DisclaimerLead />
+          <div className="mt-4">
+            <DisclaimerPanel />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
