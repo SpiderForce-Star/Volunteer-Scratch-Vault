@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { GAMES, DATA_AS_OF, money, moneyFull } from "@/data/games";
-import { scoreGame } from "@/lib/heat";
+import { getDeskSnapshot } from "@/lib/desk";
+import type { HeatReport } from "@/lib/heat";
 import { BandChip } from "@/components/ticket-card";
 import { TicketFace } from "@/components/ticket-face";
 import { LockedPanel } from "@/components/locked-panel";
-import { useAccess } from "@/lib/use-access";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { pageHead } from "@/lib/site";
 import { ArrowLeft } from "lucide-react";
@@ -28,13 +29,47 @@ export const Route = createFileRoute("/game/$number")({
   },
 });
 
+const EMPTY_HEAT: HeatReport = {
+  grand: 0,
+  medium: 0,
+  vault: 0,
+  band: "cool",
+  bust: false,
+  mediumKnown: false,
+  role: "jackpot",
+  topRemaining: null,
+  effectiveTop: null,
+  midRemaining: null,
+  lowRemaining: null,
+};
+
 function GameDetail() {
   const { number } = Route.useParams();
-  const game = GAMES.find((g) => String(g.number) === number);
-  if (!game) throw notFound();
-  const heat = scoreGame(game);
-  const { paid } = useAccess();
-  const locked = !paid;
+  const listed = GAMES.find((g) => String(g.number) === number);
+  if (!listed) throw notFound();
+  const [game, setGame] = useState(listed);
+  const [heat, setHeat] = useState<HeatReport>(EMPTY_HEAT);
+  const [locked, setLocked] = useState(true);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getDeskSnapshot()
+      .then((snap) => {
+        if (cancelled) return;
+        const next = snap.games.find((g) => String(g.number) === number) ?? listed;
+        setGame(next);
+        setHeat(snap.reports[String(next.number)] ?? EMPTY_HEAT);
+        setLocked(!snap.paid);
+        setReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [number, listed]);
 
   return (
     <div>
@@ -127,14 +162,12 @@ function GameDetail() {
               : "Compiled public remaining counts"}
             . Updated {DATA_AS_OF}. Not live store inventory.
           </p>
-          {locked ? (
+          {locked || !ready ? (
             <div className="mt-4">
               <LockedPanel
                 title="Full prize table is members-only"
                 teaser="Unlock remaining counts for every published tier."
-              >
-                <PrizeTable game={game} />
-              </LockedPanel>
+              />
             </div>
           ) : (
             <PrizeTable game={game} />

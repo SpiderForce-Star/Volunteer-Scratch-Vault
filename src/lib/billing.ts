@@ -119,6 +119,9 @@ export const syncCheckoutSession = createServerFn({ method: "POST" })
     if (!sessionId || typeof sessionId !== "string") {
       throw new Error("sessionId is required");
     }
+    if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+      throw new Error("Invalid checkout session");
+    }
     return { sessionId };
   })
   .handler(async ({ data, context }) => {

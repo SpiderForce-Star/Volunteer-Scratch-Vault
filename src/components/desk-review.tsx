@@ -73,9 +73,7 @@ export function DeskReviewPanel({
               <LockedPanel
                 title="Mid-tier leaders are members-only"
                 teaser="See which games still have the most mid-size prizes posted."
-              >
-                <PickList picks={desk.mediumLeaders} />
-              </LockedPanel>
+              />
             ) : (
               <PickList picks={desk.mediumLeaders} />
             )}
@@ -89,9 +87,7 @@ export function DeskReviewPanel({
               <LockedPanel
                 title="Bust list is members-only"
                 teaser="Walk-away games stay listed — they are not hidden."
-              >
-                <PickList picks={desk.avoid} />
-              </LockedPanel>
+              />
             ) : (
               <PickList picks={desk.avoid} />
             )}
@@ -107,9 +103,7 @@ export function DeskReviewPanel({
             <LockedPanel
               title="Full three-tier table is members-only"
               teaser="Unlock remaining top, mid, and low counts for every official row."
-            >
-              <PickList picks={desk.official} />
-            </LockedPanel>
+            />
           ) : (
             <PickList picks={desk.official} />
           )}

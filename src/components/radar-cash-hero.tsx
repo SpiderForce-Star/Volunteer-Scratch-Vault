@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { GAMES, money } from "@/data/games";
+import { money } from "@/data/games";
 import { DESK_META } from "@/data/desk-meta";
-import { cashBlips } from "@/lib/heat";
+import type { CashBlip, PriceFilter } from "@/lib/heat";
 import { useDeskAlert } from "@/lib/use-desk-alert";
 import { deskNotifyEnabled } from "@/lib/desk-alert";
 import { TrialCta } from "@/components/trial-cta";
 import { useAccess } from "@/lib/use-access";
 import { pricePrefLabel } from "@/lib/price-pref";
-import type { PriceFilter } from "@/lib/heat";
 
 const SIZE = 360;
 const CX = SIZE / 2;
@@ -15,10 +14,13 @@ const CY = SIZE / 2;
 
 export function RadarCashHero({
   priceFilter = "all",
+  blips = [],
+  gameCount = 0,
 }: {
   priceFilter?: PriceFilter;
+  blips?: CashBlip[];
+  gameCount?: number;
 }) {
-  const blips = cashBlips(GAMES, 8);
   const { unseen, markSeen, reviewDesk } = useDeskAlert();
   const { paid } = useAccess();
   const priceLabel = pricePrefLabel(priceFilter);
@@ -61,7 +63,7 @@ export function RadarCashHero({
           <p className="mt-3 overflow-hidden text-center font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
             {unseen
               ? `New desk drop · ${DESK_META.weekLabel}`
-              : `Scanning TN retail · ${GAMES.length} games · ${DESK_META.weekLabel}`}
+              : `Scanning TN retail · ${gameCount} games · ${DESK_META.weekLabel}`}
           </p>
           {unseen ? (
             <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3 text-center">
@@ -124,7 +126,7 @@ function RadarScope({
   reduce,
   alert,
 }: {
-  blips: ReturnType<typeof cashBlips>;
+  blips: CashBlip[];
   reduce: boolean;
   alert: boolean;
 }) {

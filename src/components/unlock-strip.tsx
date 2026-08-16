@@ -1,11 +1,15 @@
 import { Lock } from "lucide-react";
 import { TrialCta } from "@/components/trial-cta";
-import { GAMES } from "@/data/games";
-import { catalogHeat } from "@/lib/heat";
 import { cn } from "@/lib/utils";
 
-export function UnlockStrip({ locked = true }: { locked?: boolean }) {
-  const heat = catalogHeat(GAMES);
+export function UnlockStrip({
+  locked = true,
+  stats,
+}: {
+  locked?: boolean;
+  stats?: { grand: number; medium: number; busts: number; games: number };
+}) {
+  const heat = stats ?? { grand: 0, medium: 0, busts: 0, games: 0 };
 
   return (
     <section className="border-b border-line bg-raised/40">

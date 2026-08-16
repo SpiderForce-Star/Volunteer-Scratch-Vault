@@ -31,27 +31,57 @@ export function appOrigin(): string {
   );
 }
 
-export function requestOrigin(request?: Request | null): string {
-  if (request) {
-    try {
-      const url = new URL(request.url);
-      const proto =
-        request.headers.get("x-forwarded-proto") ??
-        url.protocol.replace(":", "") ??
-        "https";
-      const host =
-        request.headers.get("x-forwarded-host") ??
-        request.headers.get("host") ??
-        url.host;
-      if (host) return `${proto}://${host}`;
-    } catch {
-      /* fall through */
+function hostOf(value: string): string | null {
+  try {
+    const url = value.includes("://") ? new URL(value) : new URL(`https://${value}`);
+    return url.host.split(":")[0].toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function allowedHosts(): Set<string> {
+  const hosts = new Set<string>(["volunteer-scratch-vault.vercel.app"]);
+  for (const raw of [
+    process.env.BETTER_AUTH_URL,
+    process.env.VITE_APP_URL,
+    process.env.ALLOWED_CHECKOUT_HOSTS,
+  ]) {
+    if (!raw) continue;
+    for (const part of raw.split(",")) {
+      const host = hostOf(part.trim());
+      if (host) hosts.add(host);
     }
   }
-  return appOrigin();
+  return hosts;
+}
+
+/** Checkout return URLs may only point at this app — never a caller-supplied host. */
+export function requestOrigin(request?: Request | null): string {
+  const fallback = appOrigin();
+  if (!request) return fallback;
+  try {
+    const url = new URL(request.url);
+    const forwarded = (
+      request.headers.get("x-forwarded-host") ??
+      request.headers.get("host") ??
+      url.host
+    )
+      .split(",")[0]
+      .trim();
+    const host = hostOf(forwarded);
+    if (!host || !allowedHosts().has(host)) return fallback;
+    return `https://${host}`;
+  } catch {
+    return fallback;
+  }
 }
 
 export function unixToIso(seconds: number | null | undefined): string | null {
   if (seconds == null || !Number.isFinite(seconds)) return null;
   return new Date(seconds * 1000).toISOString();
+}
+
+export function isStripeCheckoutSessionId(id: string): boolean {
+  return /^cs_(test|live)_[A-Za-z0-9]+$/.test(id);
 }

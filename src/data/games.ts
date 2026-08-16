@@ -35,7 +35,7 @@ export const GAMES: Game[] = [
     topPrize: 500,
     odds: 4.19,
     tiers: [
-      { amount: 500, remaining: 245 },
+      { amount: 500, remaining: null },
       { amount: 100, remaining: null },
       { amount: 50, remaining: null },
     ],
@@ -49,7 +49,7 @@ export const GAMES: Game[] = [
     topPrize: 150_000,
     odds: 4.01,
     tiers: [
-      { amount: 150_000, remaining: 1 },
+      { amount: 150_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -63,9 +63,9 @@ export const GAMES: Game[] = [
     topPrize: 150_000,
     odds: 4.0,
     tiers: [
-      { amount: 150_000, remaining: 9 },
-      { amount: 5_000, remaining: 12 },
-      { amount: 1_000, remaining: 613 },
+      { amount: 150_000, remaining: null },
+      { amount: 5_000, remaining: null },
+      { amount: 1_000, remaining: null },
     ],
     source: "tn-remaining",
     theme: "jumbo",
@@ -77,7 +77,7 @@ export const GAMES: Game[] = [
     topPrize: 150_000,
     odds: 3.93,
     tiers: [
-      { amount: 150_000, remaining: 3 },
+      { amount: 150_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -91,7 +91,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 3.99,
     tiers: [
-      { amount: 200_000, remaining: 2 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -105,7 +105,7 @@ export const GAMES: Game[] = [
     topPrize: 250,
     odds: 5.05,
     tiers: [
-      { amount: 250, remaining: 153 },
+      { amount: 250, remaining: null },
       { amount: 50, remaining: null },
       { amount: 25, remaining: null },
     ],
@@ -119,7 +119,7 @@ export const GAMES: Game[] = [
     topPrize: 150_000,
     odds: 3.93,
     tiers: [
-      { amount: 150_000, remaining: 2 },
+      { amount: 150_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -133,7 +133,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 3.95,
     tiers: [
-      { amount: 200_000, remaining: 1 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -147,7 +147,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 3.96,
     tiers: [
-      { amount: 200_000, remaining: 2 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -161,7 +161,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 3.99,
     tiers: [
-      { amount: 200_000, remaining: 1 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -175,7 +175,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 3.99,
     tiers: [
-      { amount: 200_000, remaining: 2 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -189,7 +189,7 @@ export const GAMES: Game[] = [
     topPrize: 100_000,
     odds: 4.06,
     tiers: [
-      { amount: 100_000, remaining: 2 },
+      { amount: 100_000, remaining: null },
       { amount: 2_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -203,7 +203,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 4.1,
     tiers: [
-      { amount: 200_000, remaining: 2 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -217,7 +217,7 @@ export const GAMES: Game[] = [
     topPrize: 250_000,
     odds: 4.12,
     tiers: [
-      { amount: 250_000, remaining: 1 },
+      { amount: 250_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -231,7 +231,7 @@ export const GAMES: Game[] = [
     topPrize: 200_000,
     odds: 3.98,
     tiers: [
-      { amount: 200_000, remaining: 3 },
+      { amount: 200_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -245,9 +245,9 @@ export const GAMES: Game[] = [
     topPrize: 250_000,
     odds: 4.34,
     tiers: [
-      { amount: 250_000, remaining: 1 },
-      { amount: 10_000, remaining: 3 },
-      { amount: 1_000, remaining: 4 },
+      { amount: 250_000, remaining: null },
+      { amount: 10_000, remaining: null },
+      { amount: 1_000, remaining: null },
     ],
     source: "tn-remaining",
     theme: "multiplier",
@@ -261,7 +261,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000,
     odds: 3.61,
     tiers: [
-      { amount: 1_000, remaining: 611 },
+      { amount: 1_000, remaining: null },
       { amount: 200, remaining: null },
       { amount: 100, remaining: null },
     ],
@@ -275,7 +275,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.16,
     tiers: [
-      { amount: 500_000, remaining: 2 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -289,7 +289,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.22,
     tiers: [
-      { amount: 500_000, remaining: 1 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -303,7 +303,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.26,
     tiers: [
-      { amount: 500_000, remaining: 1 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -317,7 +317,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.33,
     tiers: [
-      { amount: 500_000, remaining: 2 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -331,7 +331,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.4,
     tiers: [
-      { amount: 500_000, remaining: 2 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -345,7 +345,7 @@ export const GAMES: Game[] = [
     topPrize: 400_000,
     odds: 3.44,
     tiers: [
-      { amount: 400_000, remaining: 1 },
+      { amount: 400_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -359,7 +359,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.46,
     tiers: [
-      { amount: 500_000, remaining: 2 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -373,7 +373,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.47,
     tiers: [
-      { amount: 500_000, remaining: 1 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -387,7 +387,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.47,
     tiers: [
-      { amount: 500_000, remaining: 1 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -401,7 +401,7 @@ export const GAMES: Game[] = [
     topPrize: 400_000,
     odds: 3.51,
     tiers: [
-      { amount: 400_000, remaining: 1 },
+      { amount: 400_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -415,7 +415,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.52,
     tiers: [
-      { amount: 500_000, remaining: 1 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -429,9 +429,9 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.55,
     tiers: [
-      { amount: 500_000, remaining: 2 },
-      { amount: 10_000, remaining: 8 },
-      { amount: 1_000, remaining: 360 },
+      { amount: 500_000, remaining: null },
+      { amount: 10_000, remaining: null },
+      { amount: 1_000, remaining: null },
     ],
     source: "tn-remaining",
     theme: "multiplier",
@@ -443,7 +443,7 @@ export const GAMES: Game[] = [
     topPrize: 250_000,
     odds: 3.57,
     tiers: [
-      { amount: 250_000, remaining: 2 },
+      { amount: 250_000, remaining: null },
       { amount: 5_000, remaining: null },
       { amount: 500, remaining: null },
     ],
@@ -457,7 +457,7 @@ export const GAMES: Game[] = [
     topPrize: 500_000,
     odds: 3.65,
     tiers: [
-      { amount: 500_000, remaining: 1 },
+      { amount: 500_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -471,7 +471,7 @@ export const GAMES: Game[] = [
     topPrize: 300_000,
     odds: 3.85,
     tiers: [
-      { amount: 300_000, remaining: 2 },
+      { amount: 300_000, remaining: null },
       { amount: 10_000, remaining: null },
       { amount: 1_000, remaining: null },
     ],
@@ -485,7 +485,7 @@ export const GAMES: Game[] = [
     topPrize: 500,
     odds: 7.89,
     tiers: [
-      { amount: 500, remaining: 374 },
+      { amount: 500, remaining: null },
       { amount: 100, remaining: null },
       { amount: 50, remaining: null },
     ],
@@ -515,7 +515,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 2.57,
     tiers: [
-      { amount: 1_000_000, remaining: 3 },
+      { amount: 1_000_000, remaining: null },
       { amount: 20_000, remaining: null },
       { amount: 5_000, remaining: null },
     ],
@@ -529,9 +529,9 @@ export const GAMES: Game[] = [
     topPrize: 75_000,
     odds: 3.2,
     tiers: [
-      { amount: 75_000, remaining: 4 },
-      { amount: 5_000, remaining: 21 },
-      { amount: 500, remaining: 222 },
+      { amount: 75_000, remaining: null },
+      { amount: 5_000, remaining: null },
+      { amount: 500, remaining: null },
     ],
     source: "tn-remaining",
     theme: "crossword",
@@ -543,7 +543,7 @@ export const GAMES: Game[] = [
     topPrize: 2_000,
     odds: 3.0,
     tiers: [
-      { amount: 2_000, remaining: 274 },
+      { amount: 2_000, remaining: null },
       { amount: 500, remaining: null },
       { amount: 200, remaining: null },
     ],
@@ -557,7 +557,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 3.07,
     tiers: [
-      { amount: 1_000_000, remaining: 3 },
+      { amount: 1_000_000, remaining: null },
       { amount: 20_000, remaining: null },
       { amount: 5_000, remaining: null },
     ],
@@ -571,7 +571,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 3.26,
     tiers: [
-      { amount: 1_000_000, remaining: 3 },
+      { amount: 1_000_000, remaining: null },
       { amount: 20_000, remaining: null },
       { amount: 5_000, remaining: null },
     ],
@@ -585,7 +585,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 3.06,
     tiers: [
-      { amount: 1_000_000, remaining: 1 },
+      { amount: 1_000_000, remaining: null },
       { amount: 20_000, remaining: null },
       { amount: 5_000, remaining: null },
     ],
@@ -599,7 +599,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 3.12,
     tiers: [
-      { amount: 1_000_000, remaining: 2 },
+      { amount: 1_000_000, remaining: null },
       { amount: 20_000, remaining: null },
       { amount: 5_000, remaining: null },
     ],
@@ -613,9 +613,9 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 3.33,
     tiers: [
-      { amount: 1_000_000, remaining: 1 },
-      { amount: 40_000, remaining: 0 },
-      { amount: 10_000, remaining: 2 },
+      { amount: 1_000_000, remaining: null },
+      { amount: 40_000, remaining: null },
+      { amount: 10_000, remaining: null },
     ],
     source: "tn-remaining",
     theme: "multiplier",
@@ -627,7 +627,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 3.34,
     tiers: [
-      { amount: 1_000_000, remaining: 1 },
+      { amount: 1_000_000, remaining: null },
       { amount: 20_000, remaining: null },
       { amount: 5_000, remaining: null },
     ],
@@ -641,7 +641,7 @@ export const GAMES: Game[] = [
     topPrize: 500,
     odds: 7.38,
     tiers: [
-      { amount: 500, remaining: 58 },
+      { amount: 500, remaining: null },
       { amount: 250, remaining: null },
       { amount: 100, remaining: null },
     ],
@@ -657,9 +657,9 @@ export const GAMES: Game[] = [
     topPrize: 2_000_000,
     odds: 2.91,
     tiers: [
-      { amount: 2_000_000, remaining: 1 },
-      { amount: 100_000, remaining: 1 },
-      { amount: 20_000, remaining: 6 },
+      { amount: 2_000_000, remaining: null },
+      { amount: 100_000, remaining: null },
+      { amount: 20_000, remaining: null },
     ],
     source: "tn-remaining",
     theme: "jumbo",
@@ -671,7 +671,7 @@ export const GAMES: Game[] = [
     topPrize: 3_000,
     odds: 2.74,
     tiers: [
-      { amount: 3_000, remaining: 68 },
+      { amount: 3_000, remaining: null },
       { amount: 500, remaining: null },
       { amount: 200, remaining: null },
     ],
@@ -685,7 +685,7 @@ export const GAMES: Game[] = [
     topPrize: 3_000_000,
     odds: 2.89,
     tiers: [
-      { amount: 3_000_000, remaining: 2 },
+      { amount: 3_000_000, remaining: null },
       { amount: 50_000, remaining: null },
       { amount: 10_000, remaining: null },
     ],
@@ -699,7 +699,7 @@ export const GAMES: Game[] = [
     topPrize: 3_000_000,
     odds: 3.09,
     tiers: [
-      { amount: 3_000_000, remaining: 1 },
+      { amount: 3_000_000, remaining: null },
       { amount: 50_000, remaining: null },
       { amount: 10_000, remaining: null },
     ],
@@ -713,7 +713,7 @@ export const GAMES: Game[] = [
     topPrize: 1_000_000,
     odds: 2.64,
     tiers: [
-      { amount: 1_000_000, remaining: 3 },
+      { amount: 1_000_000, remaining: null },
       { amount: 50_000, remaining: null },
       { amount: 10_000, remaining: null },
     ],
@@ -727,7 +727,7 @@ export const GAMES: Game[] = [
     topPrize: 5_000_000,
     odds: 2.76,
     tiers: [
-      { amount: 5_000_000, remaining: 1 },
+      { amount: 5_000_000, remaining: null },
       { amount: 100_000, remaining: null },
       { amount: 20_000, remaining: null },
     ],

@@ -3,13 +3,13 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { GAMES, money } from "@/data/games";
 import { DESK_META } from "@/data/desk-meta";
 import {
-  buildDesk,
   inPriceFilter,
-  scoreGame,
+  reportMap,
   sortGames,
   type PriceFilter,
   type SortKey,
 } from "@/lib/heat";
+import { getDeskSnapshot, type DeskSnapshot } from "@/lib/desk";
 import { BandChip, TicketCard } from "@/components/ticket-card";
 import { DeskReviewPanel } from "@/components/desk-review";
 import { DisclaimerLead, DisclaimerPanel } from "@/components/disclaimer-panel";
@@ -56,8 +56,23 @@ function VaultHome() {
   const [sort, setSort] = useState<SortKey>("safest");
   const [query, setQuery] = useState("");
   const { paid } = useAccess();
-  const locked = !paid;
+  const [snap, setSnap] = useState<DeskSnapshot | null>(null);
+  const locked = !(snap?.paid ?? paid);
   const [lateNight, setLateNight] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getDeskSnapshot()
+      .then((next) => {
+        if (!cancelled) setSnap(next);
+      })
+      .catch(() => {
+        if (!cancelled) setSnap(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [paid]);
 
   useEffect(() => {
     const saved = readPricePref();
@@ -82,16 +97,22 @@ function VaultHome() {
     writePricePref(next);
   };
 
-  const reports = useMemo(() => {
-    const map = new Map(GAMES.map((g) => [g.number, scoreGame(g)]));
-    return map;
-  }, []);
-
-  const desk = useMemo(() => buildDesk(GAMES, reports), [reports]);
+  const catalog = snap?.games ?? GAMES;
+  const reports = useMemo(
+    () => (snap ? reportMap(snap.reports) : new Map()),
+    [snap],
+  );
+  const desk = snap?.desk ?? {
+    byPrice: [],
+    mediumLeaders: [],
+    avoid: [],
+    official: [],
+    stats: { games: GAMES.length, retailJackpots: 0, cashOuts: 0, busts: 0, officialTiers: 0 },
+  };
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = GAMES.filter((g) => {
+    const filtered = catalog.filter((g) => {
       if (!inPriceFilter(g, filter)) return false;
       if (!q) return true;
       return (
@@ -99,13 +120,14 @@ function VaultHome() {
       );
     });
     return sortGames(filtered, sort, reports);
-  }, [filter, sort, query, reports]);
+  }, [catalog, filter, sort, query, reports]);
 
   const tripFilter: PriceFilter = filter === "all" ? "10" : filter;
   const tripGames = useMemo(() => {
-    const pool = GAMES.filter((g) => inPriceFilter(g, tripFilter));
+    if (!snap) return [];
+    const pool = catalog.filter((g) => inPriceFilter(g, tripFilter));
     return sortGames(pool, "medium", reports).slice(0, 3);
-  }, [tripFilter, reports]);
+  }, [snap, catalog, tripFilter, reports]);
 
   const publicList = locked ? list.slice(0, 3) : list;
   const prefLabel = pricePrefLabel(filter);
@@ -114,7 +136,7 @@ function VaultHome() {
     <div>
       <BootSplash />
       <p className="border-b border-line px-4 py-2 text-center font-mono text-[10px] tracking-[0.16em] text-faint uppercase sm:px-6">
-        {DESK_META.weekLabel} · {GAMES.length} TN games tracked
+        {snap?.weekLabel ?? DESK_META.weekLabel} · {snap?.gameCount ?? GAMES.length} TN games tracked
       </p>
       {lateNight ? (
         <p className="border-b border-line bg-raised/50 px-4 py-3 text-center text-sm text-muted sm:px-6">
@@ -123,7 +145,11 @@ function VaultHome() {
         </p>
       ) : null}
       <DeskAlertBanner />
-      <RadarCashHero priceFilter={filter} />
+      <RadarCashHero
+        priceFilter={filter}
+        blips={snap?.blips ?? []}
+        gameCount={snap?.gameCount ?? GAMES.length}
+      />
 
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -205,7 +231,7 @@ function VaultHome() {
         locked={locked}
       />
 
-      <UnlockStrip locked={locked} />
+      <UnlockStrip locked={locked} stats={snap?.stats} />
 
       <div id="desk">
         <DeskReviewPanel desk={desk} locked={locked} />
@@ -269,18 +295,24 @@ function VaultHome() {
             Updated {DESK_META.weekLabel}. Not live store inventory.
           </p>
         </div>
-        {publicList.length === 0 ? (
+        {!snap ? (
+          <p className="text-muted">Loading the desk…</p>
+        ) : publicList.length === 0 ? (
           <p className="text-muted">No games match that filter.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {publicList.map((game) => (
-              <TicketCard
-                key={game.number}
-                game={game}
-                heat={reports.get(game.number)!}
-                locked={locked}
-              />
-            ))}
+            {publicList.map((game) => {
+              const heat = reports.get(game.number);
+              if (!heat) return null;
+              return (
+                <TicketCard
+                  key={game.number}
+                  game={game}
+                  heat={heat}
+                  locked={locked}
+                />
+              );
+            })}
           </div>
         )}
         {locked ? (

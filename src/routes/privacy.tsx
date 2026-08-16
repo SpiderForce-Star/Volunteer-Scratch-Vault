@@ -47,6 +47,12 @@ function PrivacyPage() {
             <span className="text-fg">Subscription status</span> (trialing,
             active, canceled, past due) and the current period end date.
           </li>
+          <li>
+            <span className="text-fg">Session cookie</span> so you stay signed
+            in, plus on-device storage for the 18+ confirmation and your last
+            price filter. Hosting logs (IP, user agent) may be kept briefly by
+            Vercel to run the site.
+          </li>
         </ul>
       </section>
 

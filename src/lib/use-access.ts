@@ -8,6 +8,8 @@ import { configureIap, getNativeAccess } from "./iap";
  * Full desk unlocks when:
  *   - native: RevenueCat entitlement `vsv_full_access`, or
  *   - web/native: Stripe status is trialing/active
+ *
+ * The sandbox dev user never unlocks a production build.
  */
 export function useAccess() {
   const { user, isPending } = useCurrentUserState();
@@ -20,7 +22,7 @@ export function useAccess() {
     async function resolve() {
       if (isPending) return;
 
-      if (user?.isDevFallback && !isNativeApp()) {
+      if (user?.isDevFallback && import.meta.env.DEV && !isNativeApp()) {
         setPaid(true);
         setChecking(false);
         return;

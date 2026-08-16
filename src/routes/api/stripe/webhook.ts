@@ -2,9 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { handleStripeEvent } from "@/lib/billing";
 import { getStripe } from "@/lib/stripe.server";
 
+const METHOD_NOT_ALLOWED = () =>
+  new Response("Method Not Allowed", {
+    status: 405,
+    headers: { Allow: "POST", "Cache-Control": "no-store" },
+  });
+
 export const Route = createFileRoute("/api/stripe/webhook")({
   server: {
     handlers: {
+      GET: METHOD_NOT_ALLOWED,
+      HEAD: METHOD_NOT_ALLOWED,
       POST: async ({ request }) => {
         const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
         if (!secret) {

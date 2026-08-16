@@ -53,11 +53,12 @@ function TermsPage() {
 
       <Section title="2. What this product is">
         <p>
-          The Vault compiles publicly posted remaining-prize counts for
-          Tennessee instant (scratch-off) games and ranks them for information
-          only. You cannot buy, scan, check, or redeem tickets here. Remaining
-          counts change as tickets sell. Remaining counts do not improve the
-          odds of winning any prize.
+          The Vault compiles remaining-prize counts from the publicly posted
+          Tennessee Lottery remaining-prizes table and other published game
+          information, usually once a week. Counts are not live store
+          inventory. You cannot buy, scan, check, or redeem tickets here.
+          Remaining counts change as tickets sell. Remaining counts do not
+          improve the odds of winning any prize.
         </p>
         <p className="mt-3">
           Ticket faces shown in the product are independent reconstructions for

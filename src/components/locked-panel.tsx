@@ -1,30 +1,33 @@
-import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import { TrialCta } from "@/components/trial-cta";
-import { cn } from "@/lib/utils";
 
 export function UnlockFullDeskButton({
   className,
 }: {
   className?: string;
-  children?: ReactNode;
 }) {
   return <TrialCta className={className} />;
 }
 
+/** Paywall chrome only — never render real remaining counts underneath. */
 export function LockedPanel({
   title,
   teaser,
-  children,
 }: {
   title: string;
   teaser?: string;
-  children: ReactNode;
 }) {
   return (
     <div className="relative overflow-hidden rounded-lg border border-line">
       <div aria-hidden="true" className="pointer-events-none select-none opacity-40">
-        {children}
+        <ul className="divide-y divide-line">
+          {["••••", "••••", "••••"].map((row, i) => (
+            <li key={i} className="flex items-center justify-between px-4 py-3">
+              <span className="text-muted">{row}</span>
+              <span className="font-mono text-fg">••</span>
+            </li>
+          ))}
+        </ul>
       </div>
       <div
         aria-hidden="true"
