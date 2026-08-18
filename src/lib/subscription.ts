@@ -1,4 +1,4 @@
-import { STRIPE_PRICES } from "./stripe.prices";
+import { SANDBOX_STRIPE_PRICES, STRIPE_PRICES } from "./stripe.prices";
 
 /** Stripe subscription statuses that unlock the full desk. */
 export const PAID_STATUSES = ["trialing", "active"] as const;
@@ -42,8 +42,20 @@ export function planFromPriceId(
   catalog?: { monthly: string; annual: string },
 ): Plan | null {
   if (!priceId) return null;
-  if (priceId === catalog?.monthly || priceId === STRIPE_PRICES.monthly) return "monthly";
-  if (priceId === catalog?.annual || priceId === STRIPE_PRICES.annual) return "annual";
+  if (
+    priceId === catalog?.monthly ||
+    priceId === STRIPE_PRICES.monthly ||
+    priceId === SANDBOX_STRIPE_PRICES.monthly
+  ) {
+    return "monthly";
+  }
+  if (
+    priceId === catalog?.annual ||
+    priceId === STRIPE_PRICES.annual ||
+    priceId === SANDBOX_STRIPE_PRICES.annual
+  ) {
+    return "annual";
+  }
   return null;
 }
 
