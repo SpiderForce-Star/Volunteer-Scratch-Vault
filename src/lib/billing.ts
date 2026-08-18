@@ -43,7 +43,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     return { plan: plan as Plan };
   })
   .handler(async ({ data, context }) => {
-    const { getStripe, STRIPE_PRICES, requestOrigin } = await import("./stripe.server");
+    const { getStripe, STRIPE_PRICES, requestOrigin, automaticTaxEnabled } =
+      await import("./stripe.server");
     const { loadUserBilling } = await import("./subscription.server");
     const { getRequest } = await import("@tanstack/react-start/server");
 
@@ -56,6 +57,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     }
 
     const origin = requestOrigin(getRequest());
+    const taxOn = automaticTaxEnabled();
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -65,7 +67,15 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       client_reference_id: context.userId,
       customer: row?.stripeCustomerId || undefined,
       customer_email: row?.stripeCustomerId ? undefined : (row?.email ?? undefined),
+      customer_update: row?.stripeCustomerId
+        ? { address: "auto", name: "auto" }
+        : undefined,
       allow_promotion_codes: true,
+      billing_address_collection: taxOn ? "required" : "auto",
+      automatic_tax: taxOn ? { enabled: true } : undefined,
+      consent_collection: {
+        terms_of_service: "required",
+      },
       subscription_data: {
         trial_period_days: 30,
         metadata: {
@@ -171,6 +181,18 @@ function customerIdOf(customer: unknown): string | null {
   return null;
 }
 
+/** Invoice.subscription moved under parent.subscription_details in 2025 APIs. */
+export function invoiceSubscriptionId(invoice: {
+  subscription?: unknown;
+  parent?: { subscription_details?: { subscription?: unknown } };
+}): string | null {
+  const direct = invoice.subscription;
+  if (typeof direct === "string" && direct) return direct;
+  const nested = invoice.parent?.subscription_details?.subscription;
+  if (typeof nested === "string" && nested) return nested;
+  return null;
+}
+
 function periodEndOf(sub: unknown): number | null {
   if (!sub || typeof sub !== "object") return null;
   const rec = sub as {
@@ -223,6 +245,7 @@ export async function handleStripeEvent(event: {
   }
 
   if (
+    event.type === "customer.subscription.created" ||
     event.type === "customer.subscription.updated" ||
     event.type === "customer.subscription.deleted"
   ) {
@@ -232,29 +255,30 @@ export async function handleStripeEvent(event: {
     return;
   }
 
-  if (event.type === "invoice.payment_failed") {
+  if (event.type === "invoice.payment_failed" || event.type === "invoice.paid") {
     const invoice = event.data.object as {
       customer?: unknown;
       subscription?: unknown;
+      parent?: { subscription_details?: { subscription?: unknown } };
     };
     const customerId = customerIdOf(invoice.customer);
-    const subRef = invoice.subscription;
-    if (!customerId) return;
+    const subRef = invoiceSubscriptionId(invoice);
+    if (!customerId || !subRef) return;
     const stripe = getStripe();
-    const sub =
-      typeof subRef === "string"
-        ? await stripe.subscriptions.retrieve(subRef)
-        : null;
-    const failedSubId = sub?.id ?? (typeof subRef === "string" ? subRef : null);
-    if (!failedSubId) return;
+    const sub = await stripe.subscriptions.retrieve(subRef);
     await persistFromStripeSubscription({
-      userId: sub?.metadata?.userId ?? null,
+      userId: sub.metadata?.userId ?? null,
       customerId,
-      subscriptionId: failedSubId,
-      status: sub?.status ?? "past_due",
-      priceId: sub?.items.data[0]?.price.id ?? null,
-      currentPeriodEnd: sub ? periodEndOf(sub) : null,
-      trialEnd: sub?.trial_end,
+      subscriptionId: sub.id,
+      status:
+        event.type === "invoice.payment_failed"
+          ? (sub.status === "active" || sub.status === "trialing"
+              ? "past_due"
+              : sub.status)
+          : sub.status,
+      priceId: sub.items.data[0]?.price.id ?? null,
+      currentPeriodEnd: periodEndOf(sub),
+      trialEnd: sub.trial_end,
     });
   }
 }

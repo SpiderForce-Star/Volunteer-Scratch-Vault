@@ -34,15 +34,31 @@ export const Route = createFileRoute("/api/stripe/webhook")({
           return new Response("Invalid signature", { status: 400 });
         }
 
+        const { claimStripeEvent, releaseStripeEvent } = await import(
+          "@/lib/subscription.server"
+        );
+
+        let claimed = false;
         try {
+          claimed = await claimStripeEvent(event.id, event.type);
+          if (!claimed) {
+            console.info("[stripe] duplicate webhook skipped", event.id, event.type);
+            return Response.json({ received: true, duplicate: true });
+          }
           await handleStripeEvent(
             event as unknown as { type: string; data: { object: Record<string, unknown> } },
           );
         } catch (err) {
-          console.error("[stripe] webhook handler failed", err);
+          if (claimed) {
+            await releaseStripeEvent(event.id).catch((releaseErr) => {
+              console.error("[stripe] failed to release event claim", releaseErr);
+            });
+          }
+          console.error("[stripe] webhook handler failed", event.id, event.type, err);
           return new Response("Webhook handler failed", { status: 500 });
         }
 
+        console.info("[stripe] webhook processed", event.id, event.type);
         return Response.json({ received: true });
       },
     },

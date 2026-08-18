@@ -18,10 +18,60 @@ export function getStripe() {
   });
 }
 
+export function stripeSecretMode(): "live" | "test" | "unknown" {
+  const key = process.env.STRIPE_SECRET_KEY?.trim() ?? "";
+  if (key.startsWith("sk_live_") || key.startsWith("rk_live_")) return "live";
+  if (key.startsWith("sk_test_") || key.startsWith("rk_test_")) return "test";
+  return "unknown";
+}
+
+function envPrice(name: "STRIPE_PRICE_MONTHLY" | "STRIPE_PRICE_ANNUAL"): string {
+  return process.env[name]?.trim() ?? "";
+}
+
+const SANDBOX_PRICE_IDS = new Set<string>(Object.values(PUBLISHED_PRICES));
+
+/**
+ * Resolve monthly/annual Price IDs at call time.
+ * Live keys require env price IDs and refuse the committed sandbox fallbacks.
+ */
+export function getStripePrices(): { monthly: string; annual: string } {
+  const monthly = envPrice("STRIPE_PRICE_MONTHLY");
+  const annual = envPrice("STRIPE_PRICE_ANNUAL");
+  const mode = stripeSecretMode();
+
+  if (mode === "live") {
+    if (!monthly || !annual) {
+      throw new Error(
+        "Live Stripe keys require STRIPE_PRICE_MONTHLY and STRIPE_PRICE_ANNUAL",
+      );
+    }
+    if (SANDBOX_PRICE_IDS.has(monthly) || SANDBOX_PRICE_IDS.has(annual)) {
+      throw new Error("Live Stripe keys cannot use sandbox price IDs");
+    }
+    return { monthly, annual };
+  }
+
+  return {
+    monthly: monthly || PUBLISHED_PRICES.monthly,
+    annual: annual || PUBLISHED_PRICES.annual,
+  };
+}
+
+/** Live getters so module-load env timing cannot pin sandbox fallbacks. */
 export const STRIPE_PRICES = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY?.trim() || PUBLISHED_PRICES.monthly,
-  annual: process.env.STRIPE_PRICE_ANNUAL?.trim() || PUBLISHED_PRICES.annual,
-} as const;
+  get monthly() {
+    return getStripePrices().monthly;
+  },
+  get annual() {
+    return getStripePrices().annual;
+  },
+};
+
+export function automaticTaxEnabled(): boolean {
+  const raw = process.env.STRIPE_AUTOMATIC_TAX?.trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "yes";
+}
 
 export function appOrigin(): string {
   return (

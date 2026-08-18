@@ -5,7 +5,7 @@ import {
   type BillingSummary,
   type SubscriptionRow,
 } from "./subscription";
-import { getStripe, unixToIso } from "./stripe.server";
+import { getStripe, getStripePrices, unixToIso } from "./stripe.server";
 
 type UserBillingRow = {
   email: string | null;
@@ -158,6 +158,27 @@ export async function applyStripeSubscriptionObject(sub: {
   });
 }
 
+/** Claim a Stripe event id. Returns false if this delivery is a duplicate. */
+export async function claimStripeEvent(id: string, type: string): Promise<boolean> {
+  if (!id) return true;
+  const sql = await getSql();
+  const rows = await sql.query<{ id: string }>(
+    `insert into stripe_event (id, type)
+     values ($1, $2)
+     on conflict (id) do nothing
+     returning id`,
+    [id, type],
+  );
+  return rows.length > 0;
+}
+
+/** Drop a claimed event so Stripe can retry after a handler failure. */
+export async function releaseStripeEvent(id: string): Promise<void> {
+  if (!id) return;
+  const sql = await getSql();
+  await sql.query(`delete from stripe_event where id = $1`, [id]);
+}
+
 export function accessFromRow(
   row: UserBillingRow | null,
   email: string | null,
@@ -179,7 +200,7 @@ export async function buildBillingSummary(
     signedIn: true,
     paid: isPaidStatus(row?.subscriptionStatus),
     email: row?.email ?? email,
-    plan: planFromPriceId(row?.subscriptionPriceId),
+    plan: planFromPriceId(row?.subscriptionPriceId, getStripePrices()),
     status: row?.subscriptionStatus ?? null,
     trialEnd: row?.subscriptionStatus === "trialing" ? toIso(row?.currentPeriodEnd) : null,
     currentPeriodEnd: toIso(row?.currentPeriodEnd),
@@ -197,7 +218,7 @@ export async function buildBillingSummary(
       signedIn: true,
       paid: isPaidStatus(sub.status),
       email: base.email,
-      plan: planFromPriceId(sub.items.data[0]?.price.id) ?? base.plan,
+      plan: planFromPriceId(sub.items.data[0]?.price.id, getStripePrices()) ?? base.plan,
       status: sub.status,
       trialEnd: unixToIso(sub.trial_end),
       currentPeriodEnd: unixToIso(period),

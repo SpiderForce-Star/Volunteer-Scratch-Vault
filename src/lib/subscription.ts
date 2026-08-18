@@ -37,10 +37,13 @@ export function isPaidStatus(status: string | null | undefined): boolean {
   return status === "trialing" || status === "active";
 }
 
-export function planFromPriceId(priceId: string | null | undefined): Plan | null {
+export function planFromPriceId(
+  priceId: string | null | undefined,
+  catalog?: { monthly: string; annual: string },
+): Plan | null {
   if (!priceId) return null;
-  if (priceId === STRIPE_PRICES.monthly) return "monthly";
-  if (priceId === STRIPE_PRICES.annual) return "annual";
+  if (priceId === catalog?.monthly || priceId === STRIPE_PRICES.monthly) return "monthly";
+  if (priceId === catalog?.annual || priceId === STRIPE_PRICES.annual) return "annual";
   return null;
 }
 
