@@ -5,29 +5,16 @@ import {
   buildDesk,
   cashBlips,
   catalogHeat,
+  publicGame,
   scoreGame,
+  scoreGamePublic,
 } from "./heat.server";
 import type { DeskReview, HeatReport } from "./heat";
 import type { DeskSnapshot } from "./desk";
 import { accessFromRow, loadUserBilling } from "./subscription.server";
 
-function redactGame(game: Game): Game {
-  return {
-    ...game,
-    tiers: game.tiers.map((tier, i) => ({
-      ...tier,
-      remaining: i === 0 ? tier.remaining : null,
-    })),
-  };
-}
-
-function redactReport(heat: HeatReport): HeatReport {
-  return {
-    ...heat,
-    midRemaining: null,
-    lowRemaining: null,
-    mediumKnown: false,
-  };
+function reportRecord(reports: Map<number, HeatReport>): Record<string, HeatReport> {
+  return Object.fromEntries([...reports.entries()].map(([k, v]) => [String(k), v]));
 }
 
 function guestWhy(game: Game, heat: HeatReport): string {
@@ -88,31 +75,24 @@ export async function buildDeskSnapshot(
 ): Promise<DeskSnapshot> {
   const paid = await subscriberIsPaid(userId);
   const games = fullCatalog();
-  const reports = new Map(games.map((game) => [game.number, scoreGame(game)]));
-  const desk = buildDesk(games, reports);
-  const blips = cashBlips(games, 8);
-  const stats = catalogHeat(games);
 
   if (paid) {
+    const reports = new Map(games.map((game) => [game.number, scoreGame(game)]));
     return {
       paid: true,
       weekLabel: DESK_META.weekLabel,
       gameCount: games.length,
       games,
-      reports: Object.fromEntries(
-        [...reports.entries()].map(([k, v]) => [String(k), v]),
-      ),
-      desk,
-      blips,
-      stats,
+      reports: reportRecord(reports),
+      desk: buildDesk(games, reports),
+      blips: cashBlips(games, 8),
+      stats: catalogHeat(games),
     };
   }
 
-  const guestGames = games.map(redactGame);
-  const guestReports: Record<string, HeatReport> = {};
-  for (const [number, heat] of reports) {
-    guestReports[String(number)] = redactReport(heat);
-  }
+  const guestGames = games.map(publicGame);
+  const reports = new Map(guestGames.map((game) => [game.number, scoreGamePublic(game)]));
+  const desk = buildDesk(guestGames, reports);
 
   const guestDesk: DeskReview = {
     ...desk,
@@ -122,8 +102,6 @@ export async function buildDeskSnapshot(
             ...row,
             pick: {
               ...row.pick,
-              game: redactGame(row.pick.game),
-              heat: redactReport(row.pick.heat),
               why: guestWhy(row.pick.game, row.pick.heat),
             },
           }
@@ -133,8 +111,6 @@ export async function buildDeskSnapshot(
     official: [],
     avoid: desk.avoid.slice(0, 3).map((row) => ({
       ...row,
-      game: redactGame(row.game),
-      heat: redactReport(row.heat),
       why: "No useful retail top on the posted counts",
     })),
   };
@@ -144,9 +120,9 @@ export async function buildDeskSnapshot(
     weekLabel: DESK_META.weekLabel,
     gameCount: games.length,
     games: guestGames,
-    reports: guestReports,
+    reports: reportRecord(reports),
     desk: guestDesk,
-    blips: blips.map((blip) => ({ ...blip, remaining: null })),
-    stats,
+    blips: cashBlips(guestGames, 8).map((blip) => ({ ...blip, remaining: null })),
+    stats: catalogHeat(guestGames, scoreGamePublic),
   };
 }

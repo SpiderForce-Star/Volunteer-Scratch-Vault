@@ -8,7 +8,14 @@ import type {
   HeatReport,
   PriceFilter,
 } from "./heat";
-import { inPriceFilter } from "./heat";
+
+function inPriceFilter(game: Game, filter: PriceFilter): boolean {
+  if (filter === "all") return true;
+  if (filter === "5") return game.price === 5;
+  if (filter === "10") return game.price === 10;
+  if (filter === "20") return game.price === 20;
+  return game.price > 20;
+}
 
 function clamp(n: number, lo = 0, hi = 100) {
   return Math.max(lo, Math.min(hi, n));
@@ -68,7 +75,8 @@ export function scoreGame(game: Game): HeatReport {
     role === "jackpot" &&
     effectiveTop != null &&
     effectiveTop <= 0 &&
-    (midRemaining == null || midRemaining <= 2);
+    midRemaining != null &&
+    midRemaining <= 2;
 
   const vault = bust ? 0 : clamp(grand * 0.38 + medium * 0.62);
 
@@ -92,7 +100,26 @@ export function scoreGame(game: Game): HeatReport {
   };
 }
 
-export function catalogHeat(games: Game[]): {
+/** Strip mid/low remaining so only public fields remain. */
+export function publicGame(game: Game): Game {
+  return {
+    ...game,
+    tiers: game.tiers.map((tier, i) => ({
+      ...tier,
+      remaining: i === 0 ? tier.remaining : null,
+    })),
+  };
+}
+
+/** Guest scorer: price, top prize, and top-tier remaining only. */
+export function scoreGamePublic(game: Game): HeatReport {
+  return scoreGame(publicGame(game));
+}
+
+export function catalogHeat(
+  games: Game[],
+  score: (game: Game) => HeatReport = scoreGame,
+): {
   grand: number;
   medium: number;
   busts: number;
@@ -103,7 +130,7 @@ export function catalogHeat(games: Game[]): {
   let medium = 0;
   let busts = 0;
   for (const game of games) {
-    const report = scoreGame(game);
+    const report = score(game);
     grand += report.grand;
     medium += report.medium;
     if (report.bust) busts += 1;
