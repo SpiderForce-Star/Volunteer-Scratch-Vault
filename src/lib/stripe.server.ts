@@ -1,11 +1,12 @@
 import Stripe from "stripe";
 import {
-  SANDBOX_STRIPE_PRICES,
-  STRIPE_PRICES as LIVE_PRICES,
+  resolveStripePrices,
+  stripeSecretModeFromKey,
   type Plan,
+  type StripeSecretMode,
 } from "./stripe.prices";
 
-export type { Plan };
+export type { Plan, StripeSecretMode };
 
 /**
  * Server-only Stripe client.
@@ -22,49 +23,25 @@ export function getStripe() {
   });
 }
 
-export function stripeSecretMode(): "live" | "test" | "unknown" {
-  const key = process.env.STRIPE_SECRET_KEY?.trim() ?? "";
-  if (key.startsWith("sk_live_") || key.startsWith("rk_live_")) return "live";
-  if (key.startsWith("sk_test_") || key.startsWith("rk_test_")) return "test";
-  return "unknown";
+export function stripeSecretMode(): StripeSecretMode {
+  return stripeSecretModeFromKey(process.env.STRIPE_SECRET_KEY ?? "");
 }
 
 function envPrice(name: "STRIPE_PRICE_MONTHLY" | "STRIPE_PRICE_ANNUAL"): string {
   return process.env[name]?.trim() ?? "";
 }
 
-const SANDBOX_PRICE_IDS = new Set<string>(Object.values(SANDBOX_STRIPE_PRICES));
-const LIVE_PRICE_IDS = new Set<string>(Object.values(LIVE_PRICES));
-
 /**
  * Resolve monthly/annual Price IDs at call time.
- * Live keys use env or the published live IDs and refuse sandbox IDs.
+ * Live keys require env price IDs and refuse sandbox IDs.
  * Test keys use env or the sandbox IDs and refuse live IDs.
  */
 export function getStripePrices(): { monthly: string; annual: string } {
-  const monthly = envPrice("STRIPE_PRICE_MONTHLY");
-  const annual = envPrice("STRIPE_PRICE_ANNUAL");
-  const mode = stripeSecretMode();
-
-  if (mode === "live") {
-    const resolved = {
-      monthly: monthly || LIVE_PRICES.monthly,
-      annual: annual || LIVE_PRICES.annual,
-    };
-    if (SANDBOX_PRICE_IDS.has(resolved.monthly) || SANDBOX_PRICE_IDS.has(resolved.annual)) {
-      throw new Error("Live Stripe keys cannot use sandbox price IDs");
-    }
-    return resolved;
-  }
-
-  const resolved = {
-    monthly: monthly || SANDBOX_STRIPE_PRICES.monthly,
-    annual: annual || SANDBOX_STRIPE_PRICES.annual,
-  };
-  if (LIVE_PRICE_IDS.has(resolved.monthly) || LIVE_PRICE_IDS.has(resolved.annual)) {
-    throw new Error("Test Stripe keys cannot use live price IDs");
-  }
-  return resolved;
+  return resolveStripePrices({
+    mode: stripeSecretMode(),
+    monthly: envPrice("STRIPE_PRICE_MONTHLY"),
+    annual: envPrice("STRIPE_PRICE_ANNUAL"),
+  });
 }
 
 /** Live getters so module-load env timing cannot pin sandbox fallbacks. */
