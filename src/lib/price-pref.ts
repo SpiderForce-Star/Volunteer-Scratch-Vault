@@ -6,9 +6,17 @@ export function readPricePref(): PriceFilter | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (raw === "5" || raw === "10" || raw === "20" || raw === "higher") {
+    if (
+      raw === "5" ||
+      raw === "10" ||
+      raw === "20" ||
+      raw === "25" ||
+      raw === "30" ||
+      raw === "50"
+    ) {
       return raw;
     }
+    if (raw === "higher") return "25";
     return null;
   } catch {
     return null;
@@ -26,9 +34,6 @@ export function writePricePref(filter: PriceFilter): void {
 }
 
 export function pricePrefLabel(filter: PriceFilter | null): string | null {
-  if (filter === "5") return "$5";
-  if (filter === "10") return "$10";
-  if (filter === "20") return "$20";
-  if (filter === "higher") return "$25+";
-  return null;
+  if (!filter || filter === "all") return null;
+  return `$${filter}`;
 }

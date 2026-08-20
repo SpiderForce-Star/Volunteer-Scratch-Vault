@@ -1,4 +1,4 @@
-import type { Game } from "@/data/games";
+import type { Game, PrizeTier } from "@/data/games";
 import type {
   CashBlip,
   DeskPick,
@@ -9,12 +9,11 @@ import type {
   PriceFilter,
 } from "./heat";
 
+const PRICE_POINTS = [5, 10, 20, 25, 30, 50] as const;
+
 function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   if (filter === "all") return true;
-  if (filter === "5") return game.price === 5;
-  if (filter === "10") return game.price === 10;
-  if (filter === "20") return game.price === 20;
-  return game.price > 20;
+  return game.price === Number(filter);
 }
 
 function clamp(n: number, lo = 0, hi = 100) {
@@ -26,11 +25,41 @@ export function gameRole(game: Game): GameRole {
   return top <= game.price * 120 ? "cash-out" : "jackpot";
 }
 
+function isTopTier(game: Game, tier: PrizeTier, index: number): boolean {
+  return index === 0 || tier.amount === game.topPrize;
+}
+
+/** $10–$50 "won a ticket" rows — not mid-tier, not radar cash. */
+function isTicketNoise(game: Game, tier: PrizeTier, index: number): boolean {
+  if (isTopTier(game, tier, index)) return false;
+  return tier.amount <= 50;
+}
+
+function isCashPrize(tier: PrizeTier): boolean {
+  return tier.amount >= 50 && tier.amount <= 3_000;
+}
+
+function isMidPrize(game: Game, tier: PrizeTier, index: number): boolean {
+  if (isTopTier(game, tier, index)) return false;
+  if (isTicketNoise(game, tier, index)) return false;
+  return tier.amount > 3_000 && tier.amount < game.topPrize;
+}
+
+function sumRemaining(tiers: PrizeTier[]): number | null {
+  let known = false;
+  let total = 0;
+  for (const tier of tiers) {
+    if (tier.remaining == null) continue;
+    known = true;
+    total += Math.max(0, tier.remaining);
+  }
+  return known ? total : null;
+}
+
 export function scoreGame(game: Game): HeatReport {
   const role = gameRole(game);
-  const topRemaining = game.tiers[0]?.remaining ?? null;
-  const midRemaining = game.tiers[1]?.remaining ?? null;
-  const lowRemaining = game.tiers[2]?.remaining ?? null;
+  const top = game.tiers[0];
+  const topRemaining = top?.remaining ?? null;
 
   const effectiveTop =
     topRemaining == null
@@ -39,10 +68,17 @@ export function scoreGame(game: Game): HeatReport {
         ? topRemaining
         : Math.max(0, topRemaining - 1);
 
-  const mediumKnown =
-    role === "cash-out"
-      ? topRemaining != null
-      : midRemaining != null || lowRemaining != null;
+  const midTiers = game.tiers.filter((tier, i) => isMidPrize(game, tier, i));
+  const cashTiers = game.tiers.filter((tier, i) => {
+    if (isTicketNoise(game, tier, i)) return false;
+    if (role === "cash-out" && isTopTier(game, tier, i)) return true;
+    if (isTopTier(game, tier, i)) return false;
+    return isCashPrize(tier) && !isMidPrize(game, tier, i);
+  });
+
+  const midRemaining = sumRemaining(midTiers);
+  const lowRemaining = sumRemaining(cashTiers);
+  const mediumKnown = midRemaining != null || lowRemaining != null;
 
   let grand = 35;
   if (role === "cash-out") {
@@ -57,18 +93,19 @@ export function scoreGame(game: Game): HeatReport {
   }
 
   let medium = 36;
-  if (role === "cash-out") {
-    if (topRemaining == null) medium = 38;
-    else {
-      const perDollar = topRemaining / game.price;
-      medium = clamp(18 + Math.min(perDollar, 80) * 0.95);
-    }
-  } else if (midRemaining != null || lowRemaining != null) {
-    const midN = midRemaining ?? 0;
-    const lowN = lowRemaining ?? 0;
-    medium = clamp(6 + midN * 2.8 + Math.min(lowN, 700) * 0.09);
+  if (midRemaining != null) {
+    medium = clamp(8 + Math.min(midRemaining, 120) * 0.7);
+  } else if (role === "cash-out" && topRemaining != null) {
+    medium = clamp(18 + Math.min(topRemaining / game.price, 80) * 0.95);
   } else if (effectiveTop != null) {
     medium = clamp(24 + Math.min(effectiveTop, 6) * 6);
+  }
+
+  let cash = 28;
+  if (lowRemaining != null) {
+    cash = clamp(10 + Math.min(lowRemaining, 400) * 0.18);
+  } else if (role === "cash-out" && topRemaining != null) {
+    cash = clamp(16 + Math.min(topRemaining, 80) * 0.7);
   }
 
   const bust =
@@ -78,12 +115,12 @@ export function scoreGame(game: Game): HeatReport {
     midRemaining != null &&
     midRemaining <= 2;
 
-  const vault = bust ? 0 : clamp(grand * 0.38 + medium * 0.62);
+  const vault = bust ? 0 : clamp(grand * 0.28 + medium * 0.42 + cash * 0.3);
 
   let band: HeatBand = "cool";
   if (bust) band = "bust";
-  else if (vault >= 62 || medium >= 68) band = "hot";
-  else if (vault >= 42 || medium >= 44) band = "warm";
+  else if (vault >= 62 || medium >= 68 || cash >= 72) band = "hot";
+  else if (vault >= 42 || medium >= 44 || cash >= 50) band = "warm";
 
   return {
     grand,
@@ -149,32 +186,60 @@ function shortGameName(name: string): string {
   return `${trimmed.slice(0, 15).trim()}…`;
 }
 
-export function cashBlips(games: Game[], count = 8): CashBlip[] {
-  const found: Omit<CashBlip, "angle" | "radius">[] = [];
-  for (const game of games) {
-    const mid =
-      game.tiers.find(
-        (tier) =>
-          tier.amount >= 200 &&
-          tier.amount <= 20_000 &&
-          tier.remaining != null &&
-          tier.remaining > 0,
-      ) ??
-      (game.topPrize <= 3_000 && game.tiers[0]?.remaining
-        ? game.tiers[0]
-        : null);
-    if (!mid || mid.remaining == null) continue;
-    found.push({
-      id: game.number,
-      name: shortGameName(game.name),
-      amount: mid.amount,
-      remaining: mid.remaining,
-    });
+function liveRadarTiers(game: Game): PrizeTier[] {
+  const role = gameRole(game);
+  const live: PrizeTier[] = [];
+  for (let i = 0; i < game.tiers.length; i++) {
+    const tier = game.tiers[i];
+    if (tier.remaining == null || tier.remaining <= 0) continue;
+    if (isTicketNoise(game, tier, i)) continue;
+    const top = isTopTier(game, tier, i);
+    if (top) {
+      live.push(tier);
+      continue;
+    }
+    if (isCashPrize(tier) || isMidPrize(game, tier, i) || role === "cash-out") {
+      live.push(tier);
+    }
   }
-  found.sort((a, b) => (b.remaining ?? 0) - (a.remaining ?? 0));
-  return found.slice(0, count).map((blip, i) => ({
+  return live;
+}
+
+/** Spread remaining-prize blips across $5–$50. One live row can yield several amounts. */
+export function cashBlips(games: Game[], count = 12): CashBlip[] {
+  const buckets = new Map<number, Omit<CashBlip, "angle" | "radius">[]>();
+  for (const price of PRICE_POINTS) buckets.set(price, []);
+
+  for (const game of games) {
+    const bucket = buckets.get(game.price);
+    if (!bucket) continue;
+    for (const tier of liveRadarTiers(game)) {
+      bucket.push({
+        id: `${game.number}-${tier.amount}`,
+        gameId: game.number,
+        name: shortGameName(game.name),
+        amount: tier.amount,
+        remaining: tier.remaining,
+      });
+    }
+  }
+
+  for (const list of buckets.values()) {
+    list.sort((a, b) => (b.remaining ?? 0) - (a.remaining ?? 0) || b.amount - a.amount);
+  }
+
+  const picked: Omit<CashBlip, "angle" | "radius">[] = [];
+  let guard = 0;
+  while (picked.length < count && guard < count * PRICE_POINTS.length) {
+    const price = PRICE_POINTS[guard % PRICE_POINTS.length];
+    const next = buckets.get(price)?.shift();
+    if (next) picked.push(next);
+    guard += 1;
+  }
+
+  return picked.map((blip, i) => ({
     ...blip,
-    angle: (i * 360) / Math.max(count, found.length || 1) + 18 + (blip.id % 17),
+    angle: (i * 360) / Math.max(count, picked.length || 1) + 18 + (blip.gameId % 17),
     radius: 0.52 + (i % 3) * 0.1,
   }));
 }
@@ -206,12 +271,10 @@ export function buildDesk(
     return { ...best, why: why(best.game, best.heat) };
   };
 
-  const prices: { key: PriceFilter; label: string }[] = [
-    { key: "5", label: "$5" },
-    { key: "10", label: "$10" },
-    { key: "20", label: "$20" },
-    { key: "higher", label: "$25+" },
-  ];
+  const prices: { key: PriceFilter; label: string }[] = PRICE_POINTS.map((p) => ({
+    key: String(p) as PriceFilter,
+    label: `$${p}`,
+  }));
 
   const byPrice = prices.map((p) => ({
     price: p.label,

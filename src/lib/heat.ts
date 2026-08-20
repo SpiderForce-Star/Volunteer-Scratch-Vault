@@ -19,7 +19,8 @@ export type HeatReport = {
 };
 
 export type CashBlip = {
-  id: number;
+  id: string;
+  gameId: number;
   name: string;
   amount: number;
   remaining: number | null;
@@ -27,7 +28,9 @@ export type CashBlip = {
   radius: number;
 };
 
-export type PriceFilter = "all" | "5" | "10" | "20" | "higher";
+export const PRICE_POINTS = [5, 10, 20, 25, 30, 50] as const;
+export type PricePoint = (typeof PRICE_POINTS)[number];
+export type PriceFilter = "all" | `${PricePoint}`;
 export type SortKey = "heat" | "grand" | "medium" | "safest" | "price" | "name";
 
 export type DeskPick = {
@@ -116,10 +119,7 @@ export function pickOpeningFiveDollarGames(
 
 export function inPriceFilter(game: Game, filter: PriceFilter): boolean {
   if (filter === "all") return true;
-  if (filter === "5") return game.price === 5;
-  if (filter === "10") return game.price === 10;
-  if (filter === "20") return game.price === 20;
-  return game.price > 20;
+  return game.price === Number(filter);
 }
 
 export function sortGames(

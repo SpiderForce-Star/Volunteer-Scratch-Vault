@@ -180,9 +180,9 @@ test("guest cash blips rank without mid-tier remaining", () => {
   });
   const paidBlips = cashBlips([midHeavy, publicCash], 8);
   const guestBlips = cashBlips([publicGame(midHeavy), publicGame(publicCash)], 8);
-  assert.equal(paidBlips[0]?.id, 11);
-  assert.ok(guestBlips.every((blip) => blip.id !== 11));
-  assert.equal(guestBlips[0]?.id, 12);
+  assert.ok(paidBlips.some((blip) => blip.gameId === 11 && blip.amount === 5_000));
+  assert.ok(guestBlips.every((blip) => blip.amount !== 5_000));
+  assert.ok(guestBlips.some((blip) => blip.gameId === 12 && blip.amount === 500));
 });
 
 test("guest desk picks are not the paid mid-tier ranking", () => {

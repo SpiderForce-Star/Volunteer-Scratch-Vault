@@ -16,7 +16,7 @@ export function RadarCashHero({
   priceFilter = "all",
   blips = [],
   gameCount = 0,
-  skipHref = "#skip",
+  skipHref = "#tonight",
 }: {
   priceFilter?: PriceFilter;
   blips?: CashBlip[];
@@ -98,13 +98,13 @@ export function RadarCashHero({
           </p>
           <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
             {priceLabel
-              ? `Which ${priceLabel} still has mid-tier cash posted?`
-              : "Which tickets still have mid-tier cash posted?"}
+              ? `Which ${priceLabel} still has cash posted?`
+              : "Which tickets still have cash posted — at every price?"}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            {priceFilter === "5"
-              ? "Four $5 tickets to start: one Hot, one Warm, one Cold, one Pass. Open All or another price to see the rest of the desk."
-              : "See what’s still posted at your price. Skip the drained ones. Then put the phone away."}
+            The desk ranks $5, $10, $20, $25, $30, and $50 tickets from remaining
+            prizes — jackpots, mid-tier, and cash-out. See what’s still in retail.
+            Skip what’s drained. Then put the phone away.
           </p>
           <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
             18+ · Independent desk · Remaining counts do not improve odds
@@ -115,7 +115,7 @@ export function RadarCashHero({
               href={skipHref}
               className="inline-flex min-h-11 items-center justify-center px-2 text-sm text-sage underline underline-offset-4 hover:text-paper"
             >
-              {priceFilter === "5" ? "See the $5 desk" : "See the skip list"}
+              See tonight’s $5 desk
             </a>
           </div>
         </div>

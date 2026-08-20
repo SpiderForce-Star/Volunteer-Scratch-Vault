@@ -85,7 +85,7 @@ export async function buildDeskSnapshot(
       games,
       reports: reportRecord(reports),
       desk: buildDesk(games, reports),
-      blips: cashBlips(games, 8),
+      blips: cashBlips(games, 12),
       stats: catalogHeat(games),
     };
   }
@@ -122,7 +122,7 @@ export async function buildDeskSnapshot(
     games: guestGames,
     reports: reportRecord(reports),
     desk: guestDesk,
-    blips: cashBlips(guestGames, 8).map((blip) => ({ ...blip, remaining: null })),
+    blips: cashBlips(guestGames, 12).map((blip) => ({ ...blip, remaining: null })),
     stats: catalogHeat(guestGames, scoreGamePublic),
   };
 }

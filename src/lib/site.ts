@@ -6,7 +6,7 @@ export const SITE_TITLE =
   "TN scratch-off remaining prizes · Volunteer Scratch Vault";
 
 export const SITE_DESCRIPTION =
-  "See which Tennessee scratch-offs still have mid-tier cash posted. Skip drained games. Independent remaining-prize desk. Counts do not improve odds. 18+.";
+  "See which Tennessee scratch-offs still have cash posted at $5, $10, $20, $25, $30, and $50. Skip drained games. Independent remaining-prize desk. Counts do not improve odds. 18+.";
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
