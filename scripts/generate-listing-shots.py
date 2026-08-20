@@ -96,7 +96,7 @@ def alert(draw, pad, y, w, h):
 def trust(draw, pad, y, w, h):
     draw.text((pad, y), "Independent desk.", font=font(int(w * 0.045)), fill=PAPER)
     draw.text((pad, y + 60), "Not the Lottery.", font=font(int(w * 0.045)), fill=PAPER)
-    draw.text((pad, y + 140), "1 month free, then $4.99/mo", font=font(int(w * 0.034)), fill=GOLD)
+    draw.text((pad, y + 140), "7 days free, then $4.99/mo", font=font(int(w * 0.034)), fill=GOLD)
     draw.text((pad, y + 200), "or $49.99/yr. Cancel anytime.", font=font(int(w * 0.034)), fill=GOLD)
     draw.text((pad, y + 280), "Then put the phone away.", font=font(int(w * 0.04)), fill=SAGE)
 

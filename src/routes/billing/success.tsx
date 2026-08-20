@@ -2,6 +2,8 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { syncCheckoutSession } from "@/lib/billing";
+import { grantsPaidAccess } from "@/lib/subscription";
+import { CHECKOUT_PUBLIC } from "@/lib/stripe-errors";
 import { pageHead } from "@/lib/site";
 
 export const Route = createFileRoute("/billing/success")({
@@ -24,6 +26,7 @@ function SuccessPage() {
     "idle",
   );
   const [error, setError] = useState<string | null>(null);
+  const [subStatus, setSubStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (isPending || !user || !sessionId || user.isDevFallback) {
@@ -32,9 +35,37 @@ function SuccessPage() {
     }
     setStatus("saving");
     void syncCheckoutSession({ data: { sessionId } })
-      .then(() => setStatus("ready"))
+      .then((result) => {
+        const nextStatus = result?.status ?? null;
+        setSubStatus(nextStatus);
+        if (
+          nextStatus &&
+          !grantsPaidAccess({ subscriptionStatus: nextStatus, currentPeriodEnd: null })
+        ) {
+          setError(
+            nextStatus === "incomplete" || nextStatus === "incomplete_expired"
+              ? CHECKOUT_PUBLIC.failed
+              : nextStatus === "past_due" || nextStatus === "unpaid"
+                ? CHECKOUT_PUBLIC.declined
+                : CHECKOUT_PUBLIC.failed,
+          );
+          setStatus("error");
+          return;
+        }
+        setStatus("ready");
+      })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Could not confirm billing.");
+        const msg = err instanceof Error ? err.message : CHECKOUT_PUBLIC.failed;
+        setError(
+          msg === CHECKOUT_PUBLIC.network ||
+            msg === CHECKOUT_PUBLIC.declined ||
+            msg === CHECKOUT_PUBLIC.failed ||
+            msg === CHECKOUT_PUBLIC.server ||
+            msg.startsWith("Checkout") ||
+            msg.startsWith("That checkout")
+            ? msg
+            : CHECKOUT_PUBLIC.failed,
+        );
         setStatus("error");
       });
   }, [user, isPending, sessionId]);
@@ -46,19 +77,22 @@ function SuccessPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-24 text-center sm:px-6">
       <h1 className="font-display text-3xl tracking-tight">
-        You’re in. Welcome to the full desk.
+        {status === "error" ? "We couldn’t confirm that payment" : "You’re in. Welcome to the full desk."}
       </h1>
       <p className="mt-4 text-muted">
         {status === "saving"
-          ? "Confirming your 30-day trial…"
-          : "Your 30-day free trial has started. You now have complete access to every ranking, heat score, and remaining-prize view."}
+          ? "Confirming your 7-day trial…"
+          : status === "error"
+            ? (error ?? CHECKOUT_PUBLIC.failed)
+            : subStatus === "active"
+              ? "Your subscription is active. You now have complete access to every ranking, heat score, and remaining-prize view."
+              : "Your 7-day free trial has started. You now have complete access to every ranking, heat score, and remaining-prize view."}
       </p>
-      {error ? <p className="mt-4 text-sm text-bust">{error}</p> : null}
       <Link
-        to="/"
+        to={status === "error" ? "/pricing" : "/"}
         className="mt-8 inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-6 text-sm font-medium text-accent-fg"
       >
-        Go to the desk
+        {status === "error" ? "Back to pricing" : "Go to the desk"}
       </Link>
       <p className="mt-10 text-xs text-faint">
         Manage or cancel anytime from{" "}

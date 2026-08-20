@@ -13,8 +13,10 @@ import {
 import {
   formatBillingDate,
   planLabel,
+  subscriptionStatusCopy,
   type BillingSummary,
 } from "@/lib/subscription";
+import { publicPortalMessage } from "@/lib/stripe-errors";
 import {
   deskNotifyEnabled,
   enableDeskNotifications,
@@ -104,7 +106,11 @@ function AccountPage() {
       const result = await createPortalSession();
       if (result.url) window.location.href = result.url;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not open billing portal.");
+      setError(
+        err instanceof Error && err.message.startsWith("No billing customer")
+          ? err.message
+          : publicPortalMessage(err),
+      );
       setBusy(null);
     }
   };
@@ -161,7 +167,8 @@ function AccountPage() {
             ? `Trial ends ${formatBillingDate(trialEnd ?? periodEnd)}`
             : paid
               ? `Next bill ${formatBillingDate(periodEnd)}`
-              : "Start a free trial to unlock the full remaining-prize desk."}
+              : (subscriptionStatusCopy(status) ??
+                "Start a free trial to unlock the full remaining-prize desk.")}
         </p>
         {summary?.cancelAtPeriodEnd || (nativeAccess && !nativeAccess.willRenew && nativeAccess.paid) ? (
           <p className="mt-2 text-sm text-warm">

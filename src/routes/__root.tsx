@@ -5,7 +5,6 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AgeGate } from "@/components/age-gate";
-import { StudioEntrance } from "@/components/studio-entrance";
 import { InstallCoach } from "@/components/install-coach";
 import { initNativeChrome } from "@/lib/native";
 import { configureIap } from "@/lib/iap";
@@ -97,7 +96,6 @@ function NativeRoot() {
       <Outlet />
       <SiteFooter />
       <AgeGate />
-      <StudioEntrance />
     </div>
   );
 }

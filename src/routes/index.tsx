@@ -4,6 +4,7 @@ import { GAMES, money } from "@/data/games";
 import { DESK_META } from "@/data/desk-meta";
 import {
   inPriceFilter,
+  pickOpeningFiveDollarGames,
   reportMap,
   sortGames,
   type PriceFilter,
@@ -19,7 +20,7 @@ import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { TripCard } from "@/components/trip-card";
 import { TrialCta } from "@/components/trial-cta";
 import { useAccess } from "@/lib/use-access";
-import { readPricePref, writePricePref, pricePrefLabel } from "@/lib/price-pref";
+import { writePricePref, pricePrefLabel } from "@/lib/price-pref";
 import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +52,7 @@ const SORTS: { id: SortKey; label: string }[] = [
 ];
 
 function VaultHome() {
-  const [filter, setFilter] = useState<PriceFilter>("all");
+  const [filter, setFilter] = useState<PriceFilter>("5");
   const [sort, setSort] = useState<SortKey>("safest");
   const [query, setQuery] = useState("");
   const { paid } = useAccess();
@@ -74,8 +75,6 @@ function VaultHome() {
   }, [paid]);
 
   useEffect(() => {
-    const saved = readPricePref();
-    if (saved) setFilter(saved);
     try {
       const hour = Number(
         new Intl.DateTimeFormat("en-US", {
@@ -109,7 +108,12 @@ function VaultHome() {
     stats: { games: GAMES.length, retailJackpots: 0, cashOuts: 0, busts: 0, officialTiers: 0 },
   };
 
+  const openingView = filter === "5" && query.trim() === "";
+
   const list = useMemo(() => {
+    if (filter === "5" && !query.trim()) {
+      return pickOpeningFiveDollarGames(catalog, reports);
+    }
     const q = query.trim().toLowerCase();
     const filtered = catalog.filter((g) => {
       if (!inPriceFilter(g, filter)) return false;
@@ -134,7 +138,10 @@ function VaultHome() {
   return (
     <div>
       <p className="border-b border-line px-4 py-2 text-center font-mono text-[10px] tracking-[0.16em] text-faint uppercase sm:px-6">
-        {snap?.weekLabel ?? DESK_META.weekLabel} · {snap?.gameCount ?? GAMES.length} TN games tracked
+        {snap?.weekLabel ?? DESK_META.weekLabel} ·{" "}
+        {openingView
+          ? "$5 opening desk · Hot Warm Cold Pass"
+          : `${snap?.gameCount ?? GAMES.length} TN games tracked`}
       </p>
       {lateNight ? (
         <p className="border-b border-line bg-raised/50 px-4 py-3 text-center text-sm text-muted sm:px-6">
@@ -145,10 +152,19 @@ function VaultHome() {
       <DeskAlertBanner />
       <RadarCashHero
         priceFilter={filter}
-        blips={snap?.blips ?? []}
-        gameCount={snap?.gameCount ?? GAMES.length}
+        blips={
+          openingView
+            ? (snap?.blips ?? []).filter((b) =>
+                catalog.some((g) => g.number === b.id && g.price === 5),
+              )
+            : (snap?.blips ?? [])
+        }
+        gameCount={openingView ? list.length : (snap?.gameCount ?? GAMES.length)}
+        skipHref={openingView ? "#games" : "#skip"}
       />
 
+      {openingView ? null : (
+      <>
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
@@ -229,11 +245,13 @@ function VaultHome() {
         locked={locked}
       />
 
-      <UnlockStrip locked={locked} stats={snap?.stats} />
-
       <div id="desk">
         <DeskReviewPanel desk={desk} locked={locked} />
       </div>
+      </>
+      )}
+
+      <UnlockStrip locked={locked} stats={snap?.stats} />
 
       <div className="sticky top-[57px] z-10 border-b border-line bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:px-6">
@@ -286,9 +304,22 @@ function VaultHome() {
 
       <main id="games" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <p className="text-sm text-faint">
-            {locked ? `${list.length} games · mid-tier book is Vault` : `${list.length} games`}
-          </p>
+          {openingView ? (
+            <div>
+              <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
+                Tonight’s $5 desk
+              </p>
+              <h2 className="mt-1 font-display text-2xl tracking-tight">
+                Four $5 tickets — hot, warm, cold, pass
+              </h2>
+            </div>
+          ) : (
+            <p className="text-sm text-faint">
+              {locked
+                ? `${list.length} games · mid-tier book is Vault`
+                : `${list.length} games`}
+            </p>
+          )}
           <p className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-xs tracking-wide text-muted uppercase">
             Updated {DESK_META.weekLabel}. Not live store inventory.
           </p>
@@ -298,7 +329,13 @@ function VaultHome() {
         ) : publicList.length === 0 ? (
           <p className="text-muted">No games match that filter.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className={
+              openingView
+                ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            }
+          >
             {publicList.map((game) => {
               const heat = reports.get(game.number);
               if (!heat) return null;

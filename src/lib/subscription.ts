@@ -33,8 +33,51 @@ export type BillingSummary = {
   hasCustomer: boolean;
 };
 
+const UNPAID_STATUSES = new Set([
+  "past_due",
+  "unpaid",
+  "canceled",
+  "incomplete",
+  "incomplete_expired",
+  "paused",
+]);
+
 export function isPaidStatus(status: string | null | undefined): boolean {
   return status === "trialing" || status === "active";
+}
+
+/** Fail closed: only trialing/active, and not clearly expired. */
+export function grantsPaidAccess(input: {
+  subscriptionStatus?: string | null;
+  currentPeriodEnd?: string | null;
+} | null | undefined): boolean {
+  if (!input) return false;
+  const status = input.subscriptionStatus ?? null;
+  if (!isPaidStatus(status) || UNPAID_STATUSES.has(status ?? "")) return false;
+  const end = input.currentPeriodEnd;
+  if (!end) return true;
+  const t = Date.parse(end);
+  if (!Number.isFinite(t)) return true;
+  return t + 36 * 60 * 60 * 1000 > Date.now();
+}
+
+export function subscriptionStatusCopy(status: string | null | undefined): string | null {
+  if (status === "past_due") {
+    return "Payment is past due. Update your card to keep Full Access.";
+  }
+  if (status === "unpaid") {
+    return "This subscription is unpaid. Update billing to restore Full Access.";
+  }
+  if (status === "canceled") {
+    return "This subscription is canceled. Start a new plan to unlock the desk.";
+  }
+  if (status === "incomplete" || status === "incomplete_expired") {
+    return "Checkout did not finish. Start again from Pricing.";
+  }
+  if (status === "paused") {
+    return "This subscription is paused. Full Access is locked until it resumes.";
+  }
+  return null;
 }
 
 export function planFromPriceId(

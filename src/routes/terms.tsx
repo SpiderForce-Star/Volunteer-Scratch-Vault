@@ -89,13 +89,15 @@ function TermsPage() {
       <Section title="5. Subscriptions, trials, and billing">
         <p>
           Full Access is a recurring subscription. Current advertised prices are
-          $4.99 per month or $49.99 per year, each with a 30-day free trial,
+          $4.99 per month or $49.99 per year, each with a 7-day free trial,
           unless a store or checkout page shows a different price at the time
           you subscribe. Taxes may apply.
         </p>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li>
             On the website, billing runs through Stripe. Starting a trial
+            requires a credit or debit card and customer billing information.
+            Without a card, you cannot start a trial. Starting a trial
             authorizes Stripe to charge the selected plan if you do not cancel
             before the trial ends.
           </li>

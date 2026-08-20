@@ -1,6 +1,6 @@
 import { getSql } from "./db";
 import {
-  isPaidStatus,
+  grantsPaidAccess,
   planFromPriceId,
   type BillingSummary,
   type SubscriptionRow,
@@ -146,7 +146,12 @@ export async function applyStripeSubscriptionObject(sub: {
   };
   metadata?: Record<string, string>;
 }): Promise<void> {
-  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+  const customerId =
+    typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+  if (!customerId) {
+    console.warn("[stripe] subscription object missing customer", sub.id);
+    return;
+  }
   await persistFromStripeSubscription({
     userId: sub.metadata?.userId ?? null,
     customerId,
@@ -185,7 +190,7 @@ export function accessFromRow(
 ): { paid: boolean; subscription: SubscriptionRow | null; email: string | null } {
   const subscription = asRow(row ?? undefined);
   return {
-    paid: isPaidStatus(subscription?.subscriptionStatus),
+    paid: grantsPaidAccess(subscription),
     subscription,
     email: row?.email ?? email,
   };
@@ -198,7 +203,10 @@ export async function buildBillingSummary(
   const row = await loadUserBilling(userId);
   const base: BillingSummary = {
     signedIn: true,
-    paid: isPaidStatus(row?.subscriptionStatus),
+    paid: grantsPaidAccess({
+      subscriptionStatus: row?.subscriptionStatus,
+      currentPeriodEnd: toIso(row?.currentPeriodEnd),
+    }),
     email: row?.email ?? email,
     plan: planFromPriceId(row?.subscriptionPriceId, getStripePrices()),
     status: row?.subscriptionStatus ?? null,
@@ -216,7 +224,10 @@ export async function buildBillingSummary(
     const period = periodEndFromSub(sub);
     return {
       signedIn: true,
-      paid: isPaidStatus(sub.status),
+      paid: grantsPaidAccess({
+        subscriptionStatus: sub.status,
+        currentPeriodEnd: unixToIso(period),
+      }),
       email: base.email,
       plan: planFromPriceId(sub.items.data[0]?.price.id, getStripePrices()) ?? base.plan,
       status: sub.status,
@@ -226,7 +237,11 @@ export async function buildBillingSummary(
       hasCustomer: true,
     };
   } catch (err) {
-    console.error("[billing] failed to refresh Stripe subscription", err);
-    return base;
+    const { isStripeMissingResource, logStripe } = await import("./stripe-errors");
+    logStripe("billing.refresh_subscription", err, { userId });
+    if (isStripeMissingResource(err)) {
+      return { ...base, paid: false, status: row?.subscriptionStatus ?? "canceled" };
+    }
+    return { ...base, paid: false };
   }
 }

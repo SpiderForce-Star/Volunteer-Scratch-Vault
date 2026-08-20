@@ -53,8 +53,65 @@ export type DeskReview = {
 export function bandLabel(band: HeatBand): string {
   if (band === "hot") return "Hot";
   if (band === "warm") return "Warm";
-  if (band === "cool") return "Cool";
-  return "Bust";
+  if (band === "cool") return "Cold";
+  return "Pass";
+}
+
+const OPENING_BANDS: HeatBand[] = ["hot", "warm", "cool", "bust"];
+
+/**
+ * Opening desk: exactly four $5 games, one of each heat
+ * (Hot / Warm / Cold / Pass). Fills from remaining $5 tickets if a band is empty.
+ */
+function openingBand(heat: HeatReport): HeatBand {
+  if (
+    heat.band === "bust" ||
+    (heat.role === "jackpot" && heat.effectiveTop != null && heat.effectiveTop <= 0)
+  ) {
+    return "bust";
+  }
+  return heat.band;
+}
+
+export function pickOpeningFiveDollarGames(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+): Game[] {
+  const fives = games.filter((g) => g.price === 5);
+  const used = new Set<number>();
+  const picked: Game[] = [];
+
+  for (const band of OPENING_BANDS) {
+    const candidates = fives.filter((g) => {
+      if (used.has(g.number)) return false;
+      const heat = reports.get(g.number);
+      return heat ? openingBand(heat) === band : false;
+    });
+    candidates.sort((a, b) => {
+      const ha = reports.get(a.number)!;
+      const hb = reports.get(b.number)!;
+      if (band === "bust") return ha.vault - hb.vault;
+      return hb.vault - ha.vault;
+    });
+    const next = candidates[0];
+    if (next) {
+      used.add(next.number);
+      picked.push(next);
+    }
+  }
+
+  if (picked.length < 4) {
+    const rest = fives
+      .filter((g) => !used.has(g.number) && reports.has(g.number))
+      .sort((a, b) => (reports.get(b.number)?.vault ?? 0) - (reports.get(a.number)?.vault ?? 0));
+    for (const game of rest) {
+      if (picked.length >= 4) break;
+      used.add(game.number);
+      picked.push(game);
+    }
+  }
+
+  return picked;
 }
 
 export function inPriceFilter(game: Game, filter: PriceFilter): boolean {

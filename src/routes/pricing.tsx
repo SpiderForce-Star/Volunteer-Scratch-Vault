@@ -13,10 +13,22 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { pageHead } from "@/lib/site";
+import { CHECKOUT_PUBLIC, isNetworkError } from "@/lib/stripe-errors";
+
+type CheckoutNotice = "canceled" | "failed" | "declined";
 
 export const Route = createFileRoute("/pricing")({
-  validateSearch: (search: Record<string, unknown>): { canceled?: boolean } => {
-    if (search.canceled === "1" || search.canceled === true) return { canceled: true };
+  validateSearch: (search: Record<string, unknown>): { checkout?: CheckoutNotice } => {
+    if (
+      search.checkout === "canceled" ||
+      search.checkout === "failed" ||
+      search.checkout === "declined"
+    ) {
+      return { checkout: search.checkout };
+    }
+    if (search.canceled === "1" || search.canceled === true) {
+      return { checkout: "canceled" };
+    }
     return {};
   },
   component: PricingPage,
@@ -24,13 +36,31 @@ export const Route = createFileRoute("/pricing")({
     pageHead({
       title: "Pricing",
       description:
-        "Full Tennessee remaining-prize desk. $4.99/month or $49.99/year with a 1-month free trial. Cancel anytime. 18+. Independent of the Lottery.",
+        "Full Tennessee remaining-prize desk. $4.99/month or $49.99/year with a 7-day free trial. Card required. Cancel anytime. 18+. Independent of the Lottery.",
       path: "/pricing",
     }),
 });
 
+function checkoutClientMessage(err: unknown): string {
+  if (isNetworkError(err)) return CHECKOUT_PUBLIC.network;
+  const msg = err instanceof Error ? err.message : "";
+  if (msg === "Unauthorized") return msg;
+  if (msg === "Purchase canceled.") return CHECKOUT_PUBLIC.canceled;
+  if (
+    msg === CHECKOUT_PUBLIC.canceled ||
+    msg === CHECKOUT_PUBLIC.declined ||
+    msg === CHECKOUT_PUBLIC.failed ||
+    msg === CHECKOUT_PUBLIC.network ||
+    msg === CHECKOUT_PUBLIC.server ||
+    msg === CHECKOUT_PUBLIC.config
+  ) {
+    return msg;
+  }
+  return CHECKOUT_PUBLIC.server;
+}
+
 function PricingPage() {
-  const { canceled } = Route.useSearch();
+  const { checkout } = Route.useSearch();
   const { user, isPending } = useCurrentUserState();
   const { paid, isPending: accessPending } = useAccess();
   const [loading, setLoading] = useState<"monthly" | "annual" | "restore" | null>(
@@ -66,16 +96,15 @@ function PricingPage() {
         setLoading(null);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong starting checkout.";
-      if (message === "Unauthorized") {
+      const message = checkoutClientMessage(err);
+      if (err instanceof Error && err.message === "Unauthorized") {
         window.location.href = `/login?next=${encodeURIComponent("/pricing")}`;
         return;
       }
-      if (message === "Purchase canceled.") {
+      if (message === CHECKOUT_PUBLIC.canceled) {
         setLoading(null);
         return;
       }
-      console.error(err);
       setError(message);
       setLoading(null);
     }
@@ -110,20 +139,25 @@ function PricingPage() {
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted">
           Full remaining-prize rankings, mid-tier leaders, the skip list, and
           radar alerts when new official counts hit the desk. Start with a
-          30-day free trial. Cancel anytime.
+          7-day free trial. A credit or debit card is required to start.
+          Cancel anytime.
         </p>
       </div>
 
-      {canceled ? (
-        <p className="mt-6 text-center text-sm text-warm">
-          Checkout was canceled. You can start the trial whenever you are ready.
-        </p>
+      {checkout === "canceled" ? (
+        <p className="mt-6 text-center text-sm text-warm">{CHECKOUT_PUBLIC.canceled}</p>
+      ) : null}
+      {checkout === "declined" ? (
+        <p className="mt-6 text-center text-sm text-bust">{CHECKOUT_PUBLIC.declined}</p>
+      ) : null}
+      {checkout === "failed" ? (
+        <p className="mt-6 text-center text-sm text-bust">{CHECKOUT_PUBLIC.failed}</p>
       ) : null}
 
       {native ? (
         <p className="mt-6 text-center text-sm text-muted">
-          Full Access is $4.99/month or $49.99/year with a free trial, billed
-          through the App Store or Google Play.
+          Full Access is $4.99/month or $49.99/year with a 7-day free trial
+          (card required), billed through the App Store or Google Play.
         </p>
       ) : null}
 
@@ -144,7 +178,7 @@ function PricingPage() {
           <p className="mt-2 font-display text-3xl">
             $49.99<span className="text-lg text-muted">/year</span>
           </p>
-          <p className="mt-1 text-sm text-muted">1-month free trial</p>
+          <p className="mt-1 text-sm text-muted">7-day free trial · card required</p>
           <button
             type="button"
             disabled={loading !== null || paid}
@@ -162,7 +196,7 @@ function PricingPage() {
           <p className="mt-2 font-display text-3xl">
             $4.99<span className="text-lg text-muted">/mo</span>
           </p>
-          <p className="mt-1 text-sm text-muted">1-month free trial</p>
+          <p className="mt-1 text-sm text-muted">7-day free trial · card required</p>
           <button
             type="button"
             disabled={loading !== null || paid}
@@ -216,8 +250,9 @@ function PricingPage() {
           <AccordionItem value="trial">
             <AccordionTrigger>How long is the free trial?</AccordionTrigger>
             <AccordionContent>
-              30 days. You can cancel anytime before it ends and you will not be
-              charged. Trial access is full access.
+              7 days. A credit or debit card and billing details are required
+              to start — no card, no trial. Cancel anytime before it ends and
+              you will not be charged. Trial access is full access.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="cancel">

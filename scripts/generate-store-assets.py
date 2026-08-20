@@ -166,7 +166,7 @@ def make_screenshot(size: tuple[int, int], kind: str, label: str) -> Image.Image
         y += int(h * 0.07)
         draw.text((pad, y), "$4.99 / month   or   $49.99 / year", font=body, fill=INK)
         y += int(h * 0.05)
-        draw.text((pad, y), "1-month free trial  ·  cancel anytime", font=small, fill=MUTED)
+        draw.text((pad, y), "7-day free trial  ·  card required  ·  cancel anytime", font=small, fill=MUTED)
         y += int(h * 0.08)
         for title, price in (("Monthly", "$4.99"), ("Annual · Best value", "$49.99")):
             rounded_rect(draw, (pad, y, w - pad, y + int(h * 0.16)), SURFACE, 16)

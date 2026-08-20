@@ -62,7 +62,7 @@ You click these. The agent does not.
 5. Age rating: 18+ / Gambling (simulated / informational — be honest; this discusses lottery prizes).
 6. Upload later: `store/ios/icon-1024.png` and the 6.7" / 6.1" placeholders in `store/ios/screenshots/`.
 7. Create two auto-renewable subscriptions (In-App Purchases):
-   - Product id `monthly` — $4.99 / month — introductory offer: free trial (7 or 30 days)
+   - Product id `monthly` — $4.99 / month — introductory offer: 7-day free trial (card required)
    - Product id `annual` — $49.99 / year — same introductory trial
 8. Paste reviewer notes from `store/APP_REVIEW_NOTES.md`.
 9. **Do not** submit until RevenueCat products are attached (section 6).

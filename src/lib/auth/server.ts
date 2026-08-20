@@ -159,6 +159,9 @@ const grokOAuthPlugin = authConfigured
         tokenUrl: grokTokenUrl,
         userInfoUrl: grokUserInfoUrl,
         scopes: ["openid", "profile", "email"],
+        // 1.7 turns PKCE on by default; the Grok broker still uses the 1.6
+        // authorization-code flow without PKCE.
+        pkce: false,
         // `prompt: "login"` forces the broker to re-authenticate against the
         // upstream on every sign-in instead of silently reusing an existing
         // broker session. Combined with the broker sending Google

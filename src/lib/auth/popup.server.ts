@@ -18,6 +18,52 @@
  */
 import { auth, SESSION_TOKEN_COOKIE } from "./server";
 
+/** 1.6: `signInWithOAuth2`; 1.7: generic OAuth uses `signInSocial`. */
+async function startOAuthRedirect(
+  request: Request,
+  body: { providerId: string; callbackURL: string; errorCallbackURL: string },
+): Promise<Response> {
+  const api = auth.api as typeof auth.api & {
+    signInWithOAuth2?: (args: {
+      body: {
+        providerId: string;
+        callbackURL: string;
+        errorCallbackURL: string;
+      };
+      headers: Headers;
+      asResponse: true;
+    }) => Promise<Response>;
+    signInSocial?: (args: {
+      body: {
+        provider: string;
+        callbackURL: string;
+        errorCallbackURL: string;
+      };
+      headers: Headers;
+      asResponse: true;
+    }) => Promise<Response>;
+  };
+  if (typeof api.signInWithOAuth2 === "function") {
+    return api.signInWithOAuth2({
+      body,
+      headers: request.headers,
+      asResponse: true,
+    });
+  }
+  if (typeof api.signInSocial !== "function") {
+    throw new Error("Better Auth OAuth sign-in API is unavailable");
+  }
+  return api.signInSocial({
+    body: {
+      provider: body.providerId,
+      callbackURL: body.callbackURL,
+      errorCallbackURL: body.errorCallbackURL,
+    },
+    headers: request.headers,
+    asResponse: true,
+  });
+}
+
 /** Message shape the popup posts to the opener (must match `client.ts`). */
 type PopupMessage = {
   source: "grok-auth-popup";
@@ -62,16 +108,10 @@ export async function handleAuthPopupRequest(request: Request): Promise<Response
   // Stay first-party for the callback so the session cookie lands in THIS popup.
   const back = `${url.origin}/auth/popup?done=1`;
   try {
-    const apiRes = await auth.api.signInWithOAuth2({
-      body: {
-        providerId,
-        callbackURL: back,
-        errorCallbackURL: `${back}&error=1`,
-      },
-      // Forward the preview host so Better Auth derives the correct baseURL /
-      // redirect_uri for the dynamic `*.grok-sandbox.com` origin.
-      headers: request.headers,
-      asResponse: true,
+    const apiRes = await startOAuthRedirect(request, {
+      providerId,
+      callbackURL: back,
+      errorCallbackURL: `${back}&error=1`,
     });
 
     if (!apiRes.ok) {

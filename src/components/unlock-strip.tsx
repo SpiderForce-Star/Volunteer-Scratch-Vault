@@ -34,7 +34,7 @@ export function UnlockStrip({
         </div>
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-sm leading-relaxed text-muted">
-            Unlock the full ranking — 1 month free, then $4.99/mo or $49.99/yr
+            Unlock the full ranking — 7 days free (card required), then $4.99/mo or $49.99/yr
           </p>
           <TrialCta />
         </div>

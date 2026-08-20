@@ -1,19 +1,25 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { TRIAL_CTA } from "@/lib/trial";
 
-/** One label everywhere we sell the trial. */
-export const TRIAL_CTA = "Start 1-month free trial";
+export { TRIAL_CTA };
 
-export function TrialCta({ className }: { className?: string }) {
+export function TrialCta({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
   return (
     <Link
       to="/pricing"
       className={cn(
-        "inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg",
+        "inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-3 text-sm font-medium text-accent-fg sm:px-4",
         className,
       )}
     >
-      {TRIAL_CTA}
+      {compact ? "7-day trial" : TRIAL_CTA}
     </Link>
   );
 }

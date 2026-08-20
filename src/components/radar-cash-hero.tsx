@@ -16,10 +16,12 @@ export function RadarCashHero({
   priceFilter = "all",
   blips = [],
   gameCount = 0,
+  skipHref = "#skip",
 }: {
   priceFilter?: PriceFilter;
   blips?: CashBlip[];
   gameCount?: number;
+  skipHref?: string;
 }) {
   const { unseen, markSeen, reviewDesk } = useDeskAlert();
   const { paid } = useAccess();
@@ -100,8 +102,9 @@ export function RadarCashHero({
               : "Which tickets still have mid-tier cash posted?"}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            See what’s still posted at your price. Skip the drained ones. Then
-            put the phone away.
+            {priceFilter === "5"
+              ? "Four $5 tickets to start: one Hot, one Warm, one Cold, one Pass. Open All or another price to see the rest of the desk."
+              : "See what’s still posted at your price. Skip the drained ones. Then put the phone away."}
           </p>
           <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
             18+ · Independent desk · Remaining counts do not improve odds
@@ -109,10 +112,10 @@ export function RadarCashHero({
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             {paid ? null : <TrialCta />}
             <a
-              href="#skip"
+              href={skipHref}
               className="inline-flex min-h-11 items-center justify-center px-2 text-sm text-sage underline underline-offset-4 hover:text-paper"
             >
-              See the skip list
+              {priceFilter === "5" ? "See the $5 desk" : "See the skip list"}
             </a>
           </div>
         </div>

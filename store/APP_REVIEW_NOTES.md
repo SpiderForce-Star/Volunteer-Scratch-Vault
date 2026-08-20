@@ -5,7 +5,7 @@ Does not improve odds. 18+ gate. Independent of TELC.
 
 Demo account: [leave a placeholder for me].
 
-IAP or web trial: $4.99 / month or $49.99 / year, 1-month free trial.
+IAP or web trial: $4.99 / month or $49.99 / year, 7-day free trial (card required).
 
 ## What this app is
 
@@ -26,7 +26,7 @@ the footer: 1-800-GAMBLER and Tennessee REDLINE 1-800-889-9789.
 
 1. Confirm 18+ on first launch.
 2. Open Pricing.
-3. Start the monthly ($4.99) or annual ($49.99) free trial.
+3. Start the monthly ($4.99) or annual ($49.99) 7-day free trial (card required).
    Native billing is App Store / Google Play (RevenueCat). There is
    no Stripe checkout in the iOS or Android binary.
 4. Account → Restore purchases if this Apple ID / Play account already

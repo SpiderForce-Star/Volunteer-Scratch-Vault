@@ -5,6 +5,8 @@
  * STRIPE_PRICES are the live Full Access prices (copied Aug 2026) for plan labels.
  * SANDBOX_STRIPE_PRICES stay for local/dev when using sk_test_ keys.
  * Live checkout does not fall back to these IDs — env must supply live prices.
+ * Checkout trial is 7 days (see `TRIAL_PERIOD_DAYS`); set matching
+ * introductory offers on these Prices in the Stripe Dashboard.
  */
 export const STRIPE_PRICES = {
   monthly: "price_1U5t25RpUVJitDggbykPkMzh",

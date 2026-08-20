@@ -40,7 +40,7 @@ function LoginPage() {
       </p>
       <h1 className="mt-3 font-display text-4xl tracking-tight">Sign in</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        Sign in to start a 30-day trial or open a desk you already pay for.
+        Sign in to start a 7-day trial (card required) or open a desk you already pay for.
         Independent tool — not affiliated with the Tennessee Education Lottery.
       </p>
 

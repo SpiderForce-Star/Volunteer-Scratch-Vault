@@ -1,8 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "./auth/middleware";
 import { optionalAuthMiddleware } from "./auth/optional";
-import { isPaidStatus, type AccessState, type BillingSummary } from "./subscription";
+import { grantsPaidAccess, type AccessState, type BillingSummary } from "./subscription";
 import type { Plan } from "./stripe.prices";
+import { TRIAL_PERIOD_DAYS } from "./trial";
+import {
+  isStripeMissingResource,
+  logStripe,
+  publicCheckoutMessage,
+  publicPortalMessage,
+} from "./stripe-errors";
 
 export type { AccessState, BillingSummary, Plan };
 
@@ -43,57 +50,76 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     return { plan: plan as Plan };
   })
   .handler(async ({ data, context }) => {
-    const { getStripe, STRIPE_PRICES, requestOrigin, automaticTaxEnabled } =
-      await import("./stripe.server");
-    const { loadUserBilling } = await import("./subscription.server");
-    const { getRequest } = await import("@tanstack/react-start/server");
+    try {
+      const { getStripe, STRIPE_PRICES, requestOrigin, automaticTaxEnabled } =
+        await import("./stripe.server");
+      const { loadUserBilling } = await import("./subscription.server");
+      const { getRequest } = await import("@tanstack/react-start/server");
 
-    const stripe = getStripe();
-    const priceId = STRIPE_PRICES[data.plan];
-    const row = await loadUserBilling(context.userId);
+      const stripe = getStripe();
+      const priceId = STRIPE_PRICES[data.plan];
+      const row = await loadUserBilling(context.userId);
 
-    if (isPaidStatus(row?.subscriptionStatus)) {
-      return { url: "/account", alreadySubscribed: true as const };
-    }
+      if (
+        grantsPaidAccess({
+          subscriptionStatus: row?.subscriptionStatus,
+          currentPeriodEnd:
+            row?.currentPeriodEnd instanceof Date
+              ? row.currentPeriodEnd.toISOString()
+              : (row?.currentPeriodEnd ?? null),
+        })
+      ) {
+        return { url: "/account", alreadySubscribed: true as const };
+      }
 
-    const origin = requestOrigin(getRequest());
-    const taxOn = automaticTaxEnabled();
+      const origin = requestOrigin(getRequest());
+      const taxOn = automaticTaxEnabled();
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?canceled=1`,
-      client_reference_id: context.userId,
-      customer: row?.stripeCustomerId || undefined,
-      customer_email: row?.stripeCustomerId ? undefined : (row?.email ?? undefined),
-      customer_update: row?.stripeCustomerId
-        ? { address: "auto", name: "auto" }
-        : undefined,
-      allow_promotion_codes: true,
-      billing_address_collection: taxOn ? "required" : "auto",
-      automatic_tax: taxOn ? { enabled: true } : undefined,
-      consent_collection: {
-        terms_of_service: "required",
-      },
-      subscription_data: {
-        trial_period_days: 30,
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing?checkout=canceled`,
+        client_reference_id: context.userId,
+        customer: row?.stripeCustomerId || undefined,
+        customer_email: row?.stripeCustomerId ? undefined : (row?.email ?? undefined),
+        customer_update: row?.stripeCustomerId
+          ? { address: "auto", name: "auto" }
+          : undefined,
+        allow_promotion_codes: true,
+        billing_address_collection: "required",
+        payment_method_collection: "always",
+        automatic_tax: taxOn ? { enabled: true } : undefined,
+        consent_collection: {
+          terms_of_service: "required",
+        },
+        subscription_data: {
+          trial_period_days: TRIAL_PERIOD_DAYS,
+          metadata: {
+            plan: data.plan,
+            userId: context.userId,
+          },
+        },
         metadata: {
           plan: data.plan,
           userId: context.userId,
         },
-      },
-      metadata: {
-        plan: data.plan,
-        userId: context.userId,
-      },
-    });
+      });
 
-    if (!session.url) {
-      throw new Error("Stripe did not return a Checkout URL");
+      if (!session.url) {
+        logStripe("checkout.missing_url", new Error("no session.url"), {
+          userId: context.userId,
+          plan: data.plan,
+        });
+        throw new Error(publicCheckoutMessage(new Error("no session.url")));
+      }
+
+      return { url: session.url, alreadySubscribed: false as const };
+    } catch (err) {
+      if (err instanceof Error && err.message === "Unauthorized") throw err;
+      logStripe("checkout.create", err, { userId: context.userId, plan: data.plan });
+      throw new Error(publicCheckoutMessage(err));
     }
-
-    return { url: session.url, alreadySubscribed: false as const };
   });
 
 export const createPortalSession = createServerFn({ method: "POST" })
@@ -103,20 +129,29 @@ export const createPortalSession = createServerFn({ method: "POST" })
     const { loadUserBilling } = await import("./subscription.server");
     const { getRequest } = await import("@tanstack/react-start/server");
 
-    const row = await loadUserBilling(context.userId);
-    if (!row?.stripeCustomerId) {
-      throw new Error("No billing customer on this account yet.");
+    try {
+      const row = await loadUserBilling(context.userId);
+      if (!row?.stripeCustomerId) {
+        throw new Error("No billing customer on this account yet.");
+      }
+      const stripe = getStripe();
+      const origin = requestOrigin(getRequest());
+      const session = await stripe.billingPortal.sessions.create({
+        customer: row.stripeCustomerId,
+        return_url: `${origin}/account`,
+      });
+      if (!session.url) {
+        throw new Error("Stripe did not return a portal URL");
+      }
+      return { url: session.url };
+    } catch (err) {
+      if (err instanceof Error && err.message === "Unauthorized") throw err;
+      if (err instanceof Error && err.message.startsWith("No billing customer")) {
+        throw err;
+      }
+      logStripe("portal.create", err, { userId: context.userId });
+      throw new Error(publicPortalMessage(err));
     }
-    const stripe = getStripe();
-    const origin = requestOrigin(getRequest());
-    const session = await stripe.billingPortal.sessions.create({
-      customer: row.stripeCustomerId,
-      return_url: `${origin}/account`,
-    });
-    if (!session.url) {
-      throw new Error("Stripe did not return a portal URL");
-    }
-    return { url: session.url };
   });
 
 export const syncCheckoutSession = createServerFn({ method: "POST" })
@@ -138,38 +173,58 @@ export const syncCheckoutSession = createServerFn({ method: "POST" })
     const { getStripe } = await import("./stripe.server");
     const { persistFromStripeSubscription } = await import("./subscription.server");
 
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(data.sessionId, {
-      expand: ["subscription"],
-    });
+    try {
+      const stripe = getStripe();
+      const session = await stripe.checkout.sessions.retrieve(data.sessionId, {
+        expand: ["subscription"],
+      });
 
-    const owner = session.client_reference_id || session.metadata?.userId || null;
-    if (owner && owner !== context.userId) {
-      throw new Error("This checkout session belongs to a different account.");
+      const owner = session.client_reference_id || session.metadata?.userId || null;
+      if (owner && owner !== context.userId) {
+        throw new Error("This checkout session belongs to a different account.");
+      }
+
+      if (session.status === "expired") {
+        throw new Error("That checkout session expired. Start again from Pricing.");
+      }
+
+      const customerId = customerIdOf(session.customer);
+      const subRaw = session.subscription;
+      const sub =
+        typeof subRaw === "string"
+          ? await stripe.subscriptions.retrieve(subRaw)
+          : subRaw;
+
+      if (!customerId || !sub || typeof sub === "string") {
+        throw new Error("Checkout did not finish. If you were charged, contact support.");
+      }
+
+      await persistFromStripeSubscription({
+        userId: context.userId,
+        customerId,
+        subscriptionId: sub.id,
+        status: sub.status,
+        priceId: sub.items.data[0]?.price.id ?? null,
+        currentPeriodEnd: periodEndOf(sub),
+        trialEnd: sub.trial_end,
+      });
+
+      return { ok: true as const, status: sub.status };
+    } catch (err) {
+      if (err instanceof Error && err.message === "Unauthorized") throw err;
+      if (
+        err instanceof Error &&
+        (err.message.startsWith("This checkout session") ||
+          err.message.startsWith("That checkout session") ||
+          err.message.startsWith("Checkout did not finish") ||
+          err.message.startsWith("Invalid checkout") ||
+          err.message.startsWith("sessionId"))
+      ) {
+        throw err;
+      }
+      logStripe("checkout.sync", err, { userId: context.userId });
+      throw new Error(publicCheckoutMessage(err));
     }
-
-    const customerId = customerIdOf(session.customer);
-    const subRaw = session.subscription;
-    const sub =
-      typeof subRaw === "string"
-        ? await stripe.subscriptions.retrieve(subRaw)
-        : subRaw;
-
-    if (!customerId || !sub || typeof sub === "string") {
-      throw new Error("Checkout session is missing subscription details.");
-    }
-
-    await persistFromStripeSubscription({
-      userId: context.userId,
-      customerId,
-      subscriptionId: sub.id,
-      status: sub.status,
-      priceId: sub.items.data[0]?.price.id ?? null,
-      currentPeriodEnd: periodEndOf(sub),
-      trialEnd: sub.trial_end,
-    });
-
-    return { ok: true as const, status: sub.status };
   });
 
 function customerIdOf(customer: unknown): string | null {
@@ -203,45 +258,94 @@ function periodEndOf(sub: unknown): number | null {
   return rec.current_period_end ?? rec.items?.data?.[0]?.current_period_end ?? rec.trial_end ?? null;
 }
 
+const HANDLED_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_failed",
+  "checkout.session.expired",
+  "customer.subscription.created",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+  "invoice.payment_failed",
+  "invoice.paid",
+]);
+
+async function retrieveSubscription(subRef: unknown) {
+  const { getStripe } = await import("./stripe.server");
+  if (!subRef) return null;
+  if (typeof subRef === "object" && subRef && "id" in subRef && "status" in subRef) {
+    return subRef as Awaited<ReturnType<ReturnType<typeof getStripe>["subscriptions"]["retrieve"]>>;
+  }
+  if (typeof subRef !== "string") return null;
+  try {
+    return await getStripe().subscriptions.retrieve(subRef);
+  } catch (err) {
+    if (isStripeMissingResource(err)) {
+      console.warn("[stripe] subscription not found", subRef);
+      return null;
+    }
+    throw err;
+  }
+}
+
 export async function handleStripeEvent(event: {
+  id?: string;
   type: string;
   data: { object: Record<string, unknown> };
-}): Promise<void> {
-  const { getStripe } = await import("./stripe.server");
+}): Promise<"handled" | "ignored"> {
+  if (!HANDLED_EVENTS.has(event.type)) {
+    console.info("[stripe] ignored event", event.type, event.id ?? "");
+    return "ignored";
+  }
+
   const { applyStripeSubscriptionObject, persistFromStripeSubscription } =
     await import("./subscription.server");
 
-  if (event.type === "checkout.session.completed") {
+  if (event.type === "checkout.session.expired") {
+    console.info("[stripe] checkout expired", event.id ?? "");
+    return "handled";
+  }
+
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "checkout.session.async_payment_failed"
+  ) {
     const session = event.data.object as {
       client_reference_id?: string | null;
       metadata?: { userId?: string };
       customer?: unknown;
       subscription?: unknown;
+      payment_status?: string;
     };
     const userId = session.client_reference_id || session.metadata?.userId || null;
     const customerId = customerIdOf(session.customer);
-    const subRef = session.subscription;
-    if (!customerId) return;
+    if (!customerId) {
+      console.warn("[stripe] checkout event missing customer", event.type, event.id ?? "");
+      return "handled";
+    }
 
-    const stripe = getStripe();
-    const sub =
-      typeof subRef === "string"
-        ? await stripe.subscriptions.retrieve(subRef)
-        : subRef && typeof subRef === "object"
-          ? (subRef as Awaited<ReturnType<typeof stripe.subscriptions.retrieve>>)
-          : null;
-    if (!sub) return;
+    const sub = await retrieveSubscription(session.subscription);
+    if (!sub) {
+      console.warn("[stripe] checkout event missing subscription", event.type, event.id ?? "");
+      return "handled";
+    }
 
+    const failed =
+      event.type === "checkout.session.async_payment_failed" ||
+      session.payment_status === "unpaid";
     await persistFromStripeSubscription({
       userId,
       customerId,
       subscriptionId: sub.id,
-      status: sub.status,
+      status: failed
+        ? sub.status === "active" || sub.status === "trialing"
+          ? "past_due"
+          : sub.status
+        : sub.status,
       priceId: sub.items.data[0]?.price.id ?? null,
       currentPeriodEnd: periodEndOf(sub),
       trialEnd: sub.trial_end,
     });
-    return;
+    return "handled";
   }
 
   if (
@@ -249,10 +353,19 @@ export async function handleStripeEvent(event: {
     event.type === "customer.subscription.updated" ||
     event.type === "customer.subscription.deleted"
   ) {
+    const obj = event.data.object as {
+      id?: string;
+      customer?: unknown;
+      status?: string;
+    };
+    if (!obj.id || !customerIdOf(obj.customer)) {
+      console.warn("[stripe] subscription event missing customer", event.type, event.id ?? "");
+      return "handled";
+    }
     await applyStripeSubscriptionObject(
       event.data.object as Parameters<typeof applyStripeSubscriptionObject>[0],
     );
-    return;
+    return "handled";
   }
 
   if (event.type === "invoice.payment_failed" || event.type === "invoice.paid") {
@@ -263,9 +376,12 @@ export async function handleStripeEvent(event: {
     };
     const customerId = customerIdOf(invoice.customer);
     const subRef = invoiceSubscriptionId(invoice);
-    if (!customerId || !subRef) return;
-    const stripe = getStripe();
-    const sub = await stripe.subscriptions.retrieve(subRef);
+    if (!customerId || !subRef) {
+      console.warn("[stripe] invoice event missing customer or subscription", event.type, event.id ?? "");
+      return "handled";
+    }
+    const sub = await retrieveSubscription(subRef);
+    if (!sub) return "handled";
     await persistFromStripeSubscription({
       userId: sub.metadata?.userId ?? null,
       customerId,
@@ -280,5 +396,8 @@ export async function handleStripeEvent(event: {
       currentPeriodEnd: periodEndOf(sub),
       trialEnd: sub.trial_end,
     });
+    return "handled";
   }
+
+  return "ignored";
 }
