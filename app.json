@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Volunteer Scratch Vault",
-    "slug": "volunteer-scratch-vault",
+    "name": "Scratch Vault",
+    "slug": "scratch-vault",
     "scheme": "vsv",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,7 +18,7 @@
       "supportsTablet": false,
       "icon": "./store/ios/icon-1024.png",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "Not used. Volunteer Scratch Vault does not track you across apps.",
+        "NSUserTrackingUsageDescription": "Not used. Scratch Vault does not track you across apps.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },

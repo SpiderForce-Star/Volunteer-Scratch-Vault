@@ -7,6 +7,7 @@ import { deskNotifyEnabled } from "@/lib/desk-alert";
 import { TrialCta } from "@/components/trial-cta";
 import { useAccess } from "@/lib/use-access";
 import { pricePrefLabel } from "@/lib/price-pref";
+import { useI18n } from "@/lib/locale";
 
 const SIZE = 360;
 const CX = SIZE / 2;
@@ -17,14 +18,23 @@ export function RadarCashHero({
   blips = [],
   gameCount = 0,
   skipHref = "#tonight",
+  stateName = "Tennessee",
+  shortName = "TN",
+  weekLabel = DESK_META.weekLabel,
+  minAge = 18,
 }: {
   priceFilter?: PriceFilter;
   blips?: CashBlip[];
   gameCount?: number;
   skipHref?: string;
+  stateName?: string;
+  shortName?: string;
+  weekLabel?: string;
+  minAge?: 18 | 21;
 }) {
   const { unseen, markSeen, reviewDesk } = useDeskAlert();
   const { paid } = useAccess();
+  const { t } = useI18n();
   const priceLabel = pricePrefLabel(priceFilter);
   const [reduce, setReduce] = useState(false);
 
@@ -61,16 +71,25 @@ export function RadarCashHero({
     <section className="border-b border-line">
       <div className="mx-auto grid max-w-[1120px] items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,400px)_1fr] lg:py-14">
         <div className="mx-auto w-full max-w-[320px] min-w-0 sm:max-w-[360px] lg:max-w-none">
-          <RadarScope blips={blips} reduce={reduce} alert={unseen} />
+          <RadarScope
+            blips={blips}
+            reduce={reduce}
+            alert={unseen}
+            stateName={stateName}
+          />
           <p className="mt-3 overflow-hidden text-center font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
             {unseen
-              ? `New desk drop · ${DESK_META.weekLabel}`
-              : `Scanning TN retail · ${gameCount} games · ${DESK_META.weekLabel}`}
+              ? t("hero.newDrop", { week: weekLabel })
+              : t("hero.scanning", {
+                  short: shortName,
+                  count: gameCount,
+                  week: weekLabel,
+                })}
           </p>
           {unseen ? (
             <div className="mt-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-3 text-center">
               <p className="text-sm leading-relaxed text-paper">
-                New remaining-prize counts are on the desk. Review the ranking.
+                {t("hero.newCounts")}
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <button
@@ -78,14 +97,14 @@ export function RadarCashHero({
                   onClick={() => reviewDesk()}
                   className="inline-flex min-h-11 items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg"
                 >
-                  Review desk
+                  {t("hero.review")}
                 </button>
                 <button
                   type="button"
                   onClick={() => markSeen()}
                   className="inline-flex min-h-11 items-center justify-center px-3 text-sm text-muted underline underline-offset-4 hover:text-paper"
                 >
-                  Dismiss
+                  {t("hero.dismiss")}
                 </button>
               </div>
             </div>
@@ -94,20 +113,18 @@ export function RadarCashHero({
 
         <div className="min-w-0">
           <p className="font-mono text-xs tracking-[0.16em] text-gold uppercase">
-            Tennessee · independent desk
+            {t("hero.independent", { name: stateName })}
           </p>
           <h1 className="mt-3 font-display text-4xl leading-tight tracking-tight text-paper sm:text-5xl">
             {priceLabel
-              ? `Which ${priceLabel} still has cash posted?`
-              : "Which tickets still have cash posted — at every price?"}
+              ? t("hero.titlePrice", { price: priceLabel })
+              : t("hero.titleAll")}
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            The desk ranks $5, $10, $20, $25, $30, and $50 tickets from remaining
-            prizes — jackpots, mid-tier, and cash-out. See what’s still in retail.
-            Skip what’s drained. Then put the phone away.
+            {t("hero.body")}
           </p>
           <p className="mt-3 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
-            18+ · Independent desk · Remaining counts do not improve odds
+            {t("hero.meta", { age: `${minAge}+` })}
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             {paid ? null : <TrialCta />}
@@ -115,7 +132,7 @@ export function RadarCashHero({
               href={skipHref}
               className="inline-flex min-h-11 items-center justify-center px-2 text-sm text-sage underline underline-offset-4 hover:text-paper"
             >
-              See tonight’s $5 desk
+              {t("hero.tonight")}
             </a>
           </div>
         </div>
@@ -128,10 +145,12 @@ function RadarScope({
   blips,
   reduce,
   alert,
+  stateName,
 }: {
   blips: CashBlip[];
   reduce: boolean;
   alert: boolean;
+  stateName: string;
 }) {
   const rings = [56, 96, 136, 168];
   return (
@@ -139,7 +158,7 @@ function RadarScope({
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       className="block h-auto w-full overflow-visible"
       role="img"
-      aria-label="Tennessee remaining-prize radar"
+      aria-label={`${stateName} remaining-prize radar`}
     >
       <defs>
         <radialGradient id="vsv-scope" cx="50%" cy="50%" r="50%">
@@ -318,7 +337,7 @@ function RadarScope({
         fontSize="6"
         fontFamily="IBM Plex Mono, ui-monospace, monospace"
       >
-        VSV
+        SV
       </text>
     </svg>
   );

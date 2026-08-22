@@ -3,6 +3,23 @@ import type { Game } from "@/data/games";
 export type HeatBand = "hot" | "warm" | "cool" | "bust";
 export type GameRole = "cash-out" | "jackpot";
 
+/** State-aware scoring context. Default matches Tennessee (Play It Again). */
+export type HeatContext = {
+  /** Subtract this many posted top prizes for jackpot games. Cash-out games ignore it. */
+  topHoldback: number;
+  holdbackLabel?: string;
+};
+
+/** Preserve existing Tennessee scoring when callers omit a context. */
+export const DEFAULT_HEAT_CONTEXT: HeatContext = {
+  topHoldback: 1,
+  holdbackLabel: "Play It Again",
+};
+
+export const NO_HOLDBACK_CONTEXT: HeatContext = {
+  topHoldback: 0,
+};
+
 export type HeatReport = {
   grand: number;
   medium: number;
@@ -12,10 +29,20 @@ export type HeatReport = {
   mediumKnown: boolean;
   role: GameRole;
   topRemaining: number | null;
-  /** Jackpot games: remaining minus 1 Play It Again holdback. */
+  /** Jackpot games: remaining minus the state's top-prize holdback (TN Play It Again = 1). */
   effectiveTop: number | null;
   midRemaining: number | null;
   lowRemaining: number | null;
+};
+
+/** Compact remaining-heat card for the top-of-desk strip. */
+export type TonightCard = {
+  number: number;
+  name: string;
+  price: number;
+  band: HeatBand;
+  effectiveTop: number | null;
+  secondaryRemaining: number | null;
 };
 
 export type CashBlip = {

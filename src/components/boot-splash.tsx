@@ -40,10 +40,10 @@ export function BootSplash() {
       <div className="relative flex size-28 items-center justify-center rounded-full border border-gold/40">
         <div className="absolute inset-2 rounded-full border border-sage/25" />
         <div className="absolute inset-5 rounded-full border border-gold/20" />
-        <span className="font-display text-2xl tracking-tight text-paper">VSV</span>
+        <span className="font-display text-2xl tracking-tight text-paper">SV</span>
       </div>
       <p className="mt-5 font-mono text-[10px] tracking-[0.22em] text-gold uppercase">
-        Volunteer Scratch Vault
+        Scratch Vault
       </p>
     </div>
   );

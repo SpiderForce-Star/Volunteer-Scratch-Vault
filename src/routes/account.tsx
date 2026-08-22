@@ -289,8 +289,7 @@ function AccountPage() {
 
       <p className="mt-8 text-xs leading-relaxed text-faint">
         Remaining counts do not improve the odds of winning any prize. 18+ only.
-        Independent information tool, not affiliated with the Tennessee Education
-        Lottery Corporation.
+        Independent information tool, not affiliated with any state lottery.
       </p>
     </div>
   );

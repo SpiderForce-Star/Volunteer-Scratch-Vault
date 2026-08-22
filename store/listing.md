@@ -1,4 +1,4 @@
-# Store listing copy — Volunteer Scratch Vault
+# Store listing copy — Scratch Vault
 
 Paste-ready for App Store Connect and Google Play.
 
@@ -14,11 +14,11 @@ Paste-ready for App Store Connect and Google Play.
 
 ## Apple
 
-**Name (30):** Volunteer Scratch Vault  
-_23 / 30_
+**Name (30):** Scratch Vault  
+_13 / 30_
 
-**Subtitle (30):** TN remaining-prize desk  
-_23 / 30_
+**Subtitle (30):** Remaining-prize desk  
+_21 / 30_
 
 **Keywords (100, no spaces after commas):**
 
@@ -31,7 +31,7 @@ _65 / 100_
 **Promotional text (170):**
 
 ```
-Review which Tennessee scratch-offs still have prizes posted. Mid-tier heat. Bust list. Radar when the desk updates. 18+.
+Review which scratch-offs still have prizes posted. Mid-tier heat. Bust list. Radar when the desk updates. 18+.
 ```
 
 _121 / 170_
@@ -40,8 +40,8 @@ _121 / 170_
 
 ## Google Play
 
-**Title (30):** Volunteer Scratch Vault  
-_23 / 30_
+**Title (30):** Scratch Vault  
+_13 / 30_
 
 **Short description (80):**
 
@@ -61,9 +61,9 @@ See which TN instant games still have mid-tier cash posted.
 Skip drained games. Rank by heat, not hype.  
 Independent desk. Not the Lottery. Remaining counts do not improve odds.
 
-Volunteer Scratch Vault is an independent remaining-prize desk for Tennessee scratch-off games. It ranks publicly posted counts: what is still posted, what is drained, and what to skip. It does not sell tickets, take wagers, or pay prizes. It is not affiliated with, endorsed by, or connected to the Tennessee Education Lottery Corporation.
+Scratch Vault is an independent remaining-prize desk for scratch-off games. It ranks publicly posted counts: what is still posted, what is drained, and what to skip. It does not sell tickets, take wagers, or pay prizes. It is not affiliated with, endorsed by, or connected to any state lottery.
 
-Full Access is $4.99/month or $49.99/year with a 7-day free trial (card required). Cancel anytime in App Store or Google Play settings. Radar alerts tell you when new Tennessee remaining-prize information is on the desk, so you can review rankings before you buy a ticket. Informational only. Remaining counts do not improve your odds of winning.
+Full Access is $4.99/month or $49.99/year with a 7-day free trial (card required). Cancel anytime in App Store or Google Play settings. Radar alerts tell you when new remaining-prize information is on the desk, so you can review rankings before you buy a ticket. Informational only. Remaining counts do not improve your odds of winning.
 
 You must be 18 or older. If gambling is no longer fun, call or text 1-800-GAMBLER (1-800-522-4700) or the Tennessee REDLINE at 1-800-889-9789.
 
@@ -73,7 +73,7 @@ Webb Spinner Visions · https://webbspinnervisions.net
 
 ## What’s New (1.0)
 
-First release. Remaining-prize heat, skip list, and radar when the desk updates. Independent of the Tennessee Education Lottery. 18+. 1-800-GAMBLER.
+First release. Remaining-prize heat, skip list, and radar when the desk updates. Independent of every state lottery. 18+. 1-800-GAMBLER.
 
 ---
 

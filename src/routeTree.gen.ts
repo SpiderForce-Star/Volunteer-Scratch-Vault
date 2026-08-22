@@ -19,6 +19,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as BillingSuccessRouteImport } from './routes/billing/success'
 import { Route as GameNumberRouteImport } from './routes/game/$number'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCronDailyFetchRouteImport } from './routes/api/cron/daily-fetch'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +72,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronDailyFetchRoute = ApiCronDailyFetchRouteImport.update({
+  id: '/api/cron/daily-fetch',
+  path: '/api/cron/daily-fetch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe/webhook',
   path: '/api/stripe/webhook',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/billing/success': typeof BillingSuccessRoute
   '/game/$number': typeof GameNumberRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/daily-fetch': typeof ApiCronDailyFetchRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/billing/success'
     | '/game/$number'
     | '/api/auth/$'
+    | '/api/cron/daily-fetch'
     | '/api/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/billing/success'
     | '/game/$number'
     | '/api/auth/$'
+    | '/api/cron/daily-fetch'
     | '/api/stripe/webhook'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/billing/success'
     | '/game/$number'
     | '/api/auth/$'
+    | '/api/cron/daily-fetch'
     | '/api/stripe/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   BillingSuccessRoute: typeof BillingSuccessRoute
   GameNumberRoute: typeof GameNumberRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronDailyFetchRoute: typeof ApiCronDailyFetchRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
 
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/daily-fetch': {
+      id: '/api/cron/daily-fetch'
+      path: '/api/cron/daily-fetch'
+      fullPath: '/api/cron/daily-fetch'
+      preLoaderRoute: typeof ApiCronDailyFetchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stripe/webhook': {
       id: '/api/stripe/webhook'
       path: '/api/stripe/webhook'
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillingSuccessRoute: BillingSuccessRoute,
   GameNumberRoute: GameNumberRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronDailyFetchRoute: ApiCronDailyFetchRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport

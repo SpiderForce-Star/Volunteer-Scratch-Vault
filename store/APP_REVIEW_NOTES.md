@@ -1,4 +1,4 @@
-# App Review Notes — Volunteer Scratch Vault
+# App Review Notes — Scratch Vault
 
 Informational remaining-prize tracker. Does not sell lottery tickets.
 Does not improve odds. 18+ gate. Independent of TELC.
@@ -9,11 +9,10 @@ IAP or web trial: $4.99 / month or $49.99 / year, 7-day free trial (card require
 
 ## What this app is
 
-Volunteer Scratch Vault is an independent remaining-prize information
-tool for Tennessee scratch-off games. It ranks publicly posted remaining
-prizes by heat (grand / mid-tier / bust). It is not a lottery, not a
-ticket seller, and not affiliated with, endorsed by, or connected to
-the Tennessee Education Lottery Corporation.
+Scratch Vault is an independent remaining-prize information tool for
+scratch-off games. It ranks publicly posted remaining prizes by heat
+(grand / mid-tier / bust). It is not a lottery, not a ticket seller, and
+not affiliated with, endorsed by, or connected to any state lottery.
 
 Remaining counts do not improve the odds of winning any prize. Copy
 says “highest remaining-prize heat” and “still posted,” never “best

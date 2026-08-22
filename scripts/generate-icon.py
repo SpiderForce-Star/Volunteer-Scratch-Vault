@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""VSV Vault Scope icon — no baked rounded-rect, no wordmark."""
+"""SV Vault Scope icon — no baked rounded-rect, no wordmark."""
 
 from math import cos, radians, sin
 from pathlib import Path
@@ -35,10 +35,10 @@ def paint(size: int, *, padded: bool = False) -> Image.Image:
     br = max(3, size // 36)
     draw.ellipse((bx - br, by - br, bx + br, by + br), fill=SAGE)
     mark = font(max(18, int(size * 0.22)))
-    box = draw.textbbox((0, 0), "VSV", font=mark)
+    box = draw.textbbox((0, 0), "SV", font=mark)
     draw.text(
         (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - size * 0.02),
-        "VSV",
+        "SV",
         font=mark,
         fill=CREAM,
     )

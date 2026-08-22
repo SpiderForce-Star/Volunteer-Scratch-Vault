@@ -37,7 +37,7 @@ def frame(size, caption, body_fn):
     draw.rounded_rectangle((18, 18, w - 18, h - 18), radius=40, outline=LINE, width=3)
     draw.rounded_rectangle((int(w * 0.35), 28, int(w * 0.65), 42), radius=8, fill=RAISED)
     y = int(h * 0.08)
-    draw.text((pad, y), "VSV", font=font(int(w * 0.08)), fill=PAPER)
+    draw.text((pad, y), "SV", font=font(int(w * 0.08)), fill=PAPER)
     y += int(h * 0.07)
     draw.text((pad, y), caption, font=font(int(w * 0.07)), fill=GOLD)
     y += int(h * 0.10)

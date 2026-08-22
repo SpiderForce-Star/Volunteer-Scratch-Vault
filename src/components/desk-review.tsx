@@ -1,48 +1,68 @@
 import { Link } from "@tanstack/react-router";
 import { money, type Game } from "@/data/games";
 import type { DeskPick, DeskReview } from "@/lib/heat";
+import type { StateConfig } from "@/config/states";
 import { BandChip } from "@/components/ticket-card";
 import { LockedPanel } from "@/components/locked-panel";
+import { useActiveState } from "@/lib/active-state";
+import { useI18n } from "@/lib/locale";
 
 export function DeskReviewPanel({
   desk,
   locked = false,
+  state,
 }: {
   desk: DeskReview;
   locked?: boolean;
+  state?: StateConfig;
 }) {
+  const { config } = useActiveState();
+  const { t } = useI18n();
+  const deskState = state ?? config;
+  const holdback = deskState.holdback;
   return (
     <section className="border-b border-line bg-surface/60">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
         <div className="max-w-2xl">
           <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
-            Current desk
+            {t("desk.kicker")}
           </p>
           <h2 className="mt-2 font-display text-2xl tracking-tight">
-            What the remaining-prize data actually supports
+            {t("desk.title")}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Printed odds never change. Tennessee also holds one top prize per
-            game for Play It Again, so a posted “1 left” is treated as no
-            retail jackpot. Medium heat is weighted heavier than the grand.
+            {t("desk.oddsNever")}{" "}
+            {holdback
+              ? t("desk.holdback", {
+                  name: deskState.name,
+                  label: holdback.label,
+                })
+              : t("desk.noHoldback", { name: deskState.name })}{" "}
+            {t("desk.mediumBoost")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Mini
-            label="Retail jackpots live"
+            label={t("desk.jackpots")}
             value={String(desk.stats.retailJackpots)}
           />
-          <Mini label="Cash-out games" value={String(desk.stats.cashOuts)} />
-          <Mini label="Avoid / bust" value={String(desk.stats.busts)} />
+          <Mini label={t("desk.cashOuts")} value={String(desk.stats.cashOuts)} />
+          <Mini label={t("desk.avoid")} value={String(desk.stats.busts)} />
           <Mini
-            label="Official 3-tier rows"
+            label={
+              deskState.dataMode === "sample"
+                ? t("desk.rowsDemo")
+                : deskState.dataMode === "compiled"
+                  ? t("desk.rowsCompiled")
+                  : t("desk.rowsOfficial")
+            }
             value={String(desk.stats.officialTiers)}
           />
         </div>
 
         <div>
-          <h3 className="font-display text-lg">Best ticket by price</h3>
+          <h3 className="font-display text-lg">{t("desk.bestByPrice")}</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {desk.byPrice.map((row) =>
               row.pick ? (
@@ -56,7 +76,7 @@ export function DeskReviewPanel({
                   key={row.price}
                   className="rounded-lg border border-line p-4 text-sm text-faint"
                 >
-                  {row.price}: no live pick
+                  {t("desk.noPick", { price: row.price })}
                 </div>
               ),
             )}
@@ -65,28 +85,28 @@ export function DeskReviewPanel({
 
         <div className="grid gap-8 lg:grid-cols-2">
           <div>
-            <h3 className="font-display text-lg">Medium-prize leaders</h3>
+            <h3 className="font-display text-lg">{t("desk.mediumLeaders")}</h3>
             <p className="mt-1 text-sm text-faint">
-              Games with the most mid-tier prizes still posted.
+              {t("desk.mediumLeadersNote")}
             </p>
             {locked ? (
               <LockedPanel
-                title="Mid-tier leaders are members-only"
-                teaser="See which games still have the most mid-size prizes posted."
+                title={t("desk.lockedMid")}
+                teaser={t("desk.lockedMidTeaser")}
               />
             ) : (
               <PickList picks={desk.mediumLeaders} />
             )}
           </div>
           <div>
-            <h3 className="font-display text-lg">Skip these</h3>
+            <h3 className="font-display text-lg">{t("desk.skipTitle")}</h3>
             <p className="mt-1 text-sm text-faint">
-              Effective retail top is gone, or mid-tier is drained.
+              {t("desk.skipNote")}
             </p>
             {locked ? (
               <LockedPanel
-                title="Bust list is members-only"
-                teaser="Walk-away games stay listed — they are not hidden."
+                title={t("desk.lockedBust")}
+                teaser={t("desk.lockedBustTeaser")}
               />
             ) : (
               <PickList picks={desk.avoid} />
@@ -95,14 +115,24 @@ export function DeskReviewPanel({
         </div>
 
         <div>
-          <h3 className="font-display text-lg">Official three-tier table</h3>
+          <h3 className="font-display text-lg">
+            {deskState.dataMode === "sample"
+              ? t("desk.threeTierDemo")
+              : deskState.dataMode === "compiled"
+                ? t("desk.threeTierCompiled")
+                : t("desk.threeTier")}
+          </h3>
           <p className="mt-1 text-sm text-faint">
-            Highest-confidence rows from the Lottery remaining-prizes page.
+            {deskState.dataMode === "sample"
+              ? t("desk.threeNoteDemo")
+              : deskState.dataMode === "compiled"
+                ? t("desk.threeNoteCompiled")
+                : t("desk.threeNote")}
           </p>
           {locked ? (
             <LockedPanel
-              title="Full three-tier table is members-only"
-              teaser="Unlock remaining top, mid, and low counts for every official row."
+              title={t("desk.lockedThree")}
+              teaser={t("desk.lockedThreeTeaser")}
             />
           ) : (
             <PickList picks={desk.official} />
@@ -125,10 +155,12 @@ function Mini({ label, value }: { label: string; value: string }) {
 }
 
 function PickCard({ kicker, pick }: { kicker: string; pick: DeskPick }) {
+  const { stateId } = useActiveState();
   return (
     <Link
       to="/game/$number"
       params={{ number: String(pick.game.number) }}
+      search={{ state: stateId }}
       className="flex flex-col gap-2 rounded-lg border border-line bg-bg p-4 hover:border-muted"
     >
       <div className="flex items-center justify-between gap-2">
@@ -145,6 +177,7 @@ function PickCard({ kicker, pick }: { kicker: string; pick: DeskPick }) {
 }
 
 function PickList({ picks }: { picks: DeskPick[] }) {
+  const { stateId } = useActiveState();
   if (!picks.length) {
     return <p className="mt-3 text-sm text-muted">None flagged.</p>;
   }
@@ -155,6 +188,7 @@ function PickList({ picks }: { picks: DeskPick[] }) {
           <Link
             to="/game/$number"
             params={{ number: String(p.game.number) }}
+            search={{ state: stateId }}
             className="flex items-start justify-between gap-3 px-3 py-3 hover:bg-raised"
           >
             <div className="min-w-0">

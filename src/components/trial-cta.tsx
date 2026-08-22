@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { TRIAL_CTA } from "@/lib/trial";
+import { useI18n } from "@/lib/locale";
 
 export { TRIAL_CTA };
 
@@ -11,6 +12,7 @@ export function TrialCta({
   className?: string;
   compact?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <Link
       to="/pricing"
@@ -19,7 +21,7 @@ export function TrialCta({
         className,
       )}
     >
-      {compact ? "7-day trial" : TRIAL_CTA}
+      {compact ? t("cta.trialCompact") : t("cta.trial")}
     </Link>
   );
 }

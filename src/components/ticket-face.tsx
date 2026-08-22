@@ -22,7 +22,7 @@ export function TicketFace({
     >
       <img
         src={art}
-        alt={`Ticket face for ${game.name} #${game.number}`}
+        alt={`Independent reconstruction of ${game.name} #${game.number} ticket face`}
         className={cn(
           "h-full w-full object-cover",
           full ? "object-center" : "object-[center_18%]",

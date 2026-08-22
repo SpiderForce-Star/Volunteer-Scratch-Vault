@@ -1,14 +1,19 @@
 import { Lock } from "lucide-react";
 import { TrialCta } from "@/components/trial-cta";
 import { cn } from "@/lib/utils";
+import type { HoldbackRule } from "@/config/states";
+import { useI18n } from "@/lib/locale";
 
 export function UnlockStrip({
   locked = true,
   stats,
+  holdback,
 }: {
   locked?: boolean;
   stats?: { grand: number; medium: number; busts: number; games: number };
+  holdback?: HoldbackRule | null;
 }) {
+  const { t } = useI18n();
   const heat = stats ?? { grand: 0, medium: 0, busts: 0, games: 0 };
 
   return (
@@ -16,16 +21,20 @@ export function UnlockStrip({
       <div className="mx-auto flex max-w-[1120px] flex-col gap-6 px-4 py-8 sm:px-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <GaugeCard
-            label="Grand heat"
+            label={t("heat.grand")}
             value={heat.grand}
-            note="Retail jackpots still posted after Play It Again"
+            note={
+              holdback
+                ? t("unlock.grandNoteHoldback", { label: holdback.label })
+                : t("unlock.grandNote")
+            }
             locked={locked}
             tone="gold"
           />
           <GaugeCard
-            label="Medium heat"
+            label={t("heat.medium")}
             value={heat.medium}
-            note="Mid-tier remaining across the catalog"
+            note={t("unlock.mediumNote")}
             locked={locked}
             tone="sage"
           />
@@ -34,7 +43,7 @@ export function UnlockStrip({
         </div>
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-sm leading-relaxed text-muted">
-            Unlock the full ranking — 7 days free (card required), then $4.99/mo or $49.99/yr
+            {t("unlock.price")}
           </p>
           <TrialCta />
         </div>
@@ -103,11 +112,12 @@ function GaugeCard({
 }
 
 function BustCard({ busts, locked }: { busts: number; locked: boolean }) {
+  const { t } = useI18n();
   return (
     <article className="relative overflow-hidden rounded-lg border border-line bg-bg p-4">
       {locked ? <LockMark /> : null}
       <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-        Bust filter
+        {t("unlock.bustFilter")}
       </p>
       <div className="relative mt-3 h-20">
         <div className="absolute inset-x-4 top-2 h-14 rounded-sm border border-line bg-raised/80" />
@@ -118,23 +128,24 @@ function BustCard({ busts, locked }: { busts: number; locked: boolean }) {
             "border-2 border-danger px-3 py-1 font-mono text-sm tracking-[0.18em] text-danger uppercase",
           )}
         >
-          Skip
+          {t("home.skip")}
         </span>
       </div>
       <p className="font-display text-2xl tabular-nums">{busts}</p>
       <p className="mt-1 text-xs leading-relaxed text-faint">
-        Games the desk flags to walk past. Not a guarantee.
+        {t("unlock.bustNote")}
       </p>
     </article>
   );
 }
 
 function RadarAlertCard({ locked }: { locked: boolean }) {
+  const { t } = useI18n();
   return (
     <article className="relative overflow-hidden rounded-lg border border-line bg-bg p-4">
       {locked ? <LockMark /> : null}
       <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-        Radar alerts
+        {t("unlock.radar")}
       </p>
       <div className="relative mt-4 flex h-16 items-center justify-center">
         <span className="absolute size-14 rounded-full border border-gold/30" />
@@ -142,7 +153,7 @@ function RadarAlertCard({ locked }: { locked: boolean }) {
         <span className="size-2 rounded-full bg-gold" />
       </div>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        Know when the desk changes. Review before you go to the store.
+        {t("unlock.radarBody")}
       </p>
     </article>
   );

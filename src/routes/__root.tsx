@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AgeGate } from "@/components/age-gate";
 import { InstallCoach } from "@/components/install-coach";
+import { ActiveStateProvider } from "@/lib/active-state";
+import { LocaleProvider } from "@/lib/locale";
 import { initNativeChrome } from "@/lib/native";
 import { configureIap } from "@/lib/iap";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
@@ -68,7 +70,11 @@ export const Route = createRootRoute({
       <body>
         <PreviewHostBridge />
         <AuthProvider>
-          <NativeRoot />
+          <ActiveStateProvider>
+            <LocaleProvider>
+              <NativeRoot />
+            </LocaleProvider>
+          </ActiveStateProvider>
         </AuthProvider>
         <Scripts />
       </body>

@@ -3,6 +3,12 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": null,
+  "crons": [
+    {
+      "path": "/api/cron/daily-fetch",
+      "schedule": "15 11 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

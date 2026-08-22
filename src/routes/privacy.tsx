@@ -7,7 +7,7 @@ export const Route = createFileRoute("/privacy")({
     pageHead({
       title: "Privacy",
       description:
-        "Privacy policy for Volunteer Scratch Vault. Email and purchases only. Independent remaining-prize desk. 18+.",
+        "Privacy policy for Scratch Vault. Email and purchases only. Independent remaining-prize desk. 18+ to use; Arizona Lottery tickets are 21+.",
       path: "/privacy",
     }),
 });
@@ -20,10 +20,9 @@ function PrivacyPage() {
       </p>
       <h1 className="mt-3 font-display text-4xl tracking-tight">Privacy</h1>
       <p className="mt-4 text-sm leading-relaxed text-muted">
-        Volunteer Scratch Vault is an independent remaining-prize information
-        product of Webb Spinner Visions. It is not a lottery, not a ticket
-        seller, and not affiliated with the Tennessee Education Lottery
-        Corporation. Last updated August 16, 2026.
+        Scratch Vault is an independent remaining-prize information product of
+        Webb Spinner Visions. It is not a lottery, not a ticket seller, and
+        not affiliated with any state lottery. Last updated August 20, 2026.
       </p>
 
       <section className="mt-10">
@@ -72,9 +71,11 @@ function PrivacyPage() {
       <section className="mt-10">
         <h2 className="font-display text-2xl tracking-tight">18+</h2>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          You must be 18 or older. The native apps ask you to confirm age on
-          first launch. This product is information only. Remaining-prize
-          counts do not improve the odds of winning any prize.
+          You must be 18 or older to use this product. Lottery purchase ages
+          vary by state (18+ in most supported states; 21+ in Arizona). The
+          native apps ask you to confirm age on first launch. This product is
+          information only. Remaining-prize counts do not improve the odds of
+          winning any prize.
         </p>
       </section>
 
@@ -124,7 +125,7 @@ function PrivacyPage() {
           <a className="underline underline-offset-2" href="tel:18005224700">
             1-800-GAMBLER
           </a>{" "}
-          (1-800-522-4700) or Tennessee REDLINE{" "}
+          (1-800-522-4700). In Tennessee you can also call REDLINE{" "}
           <a className="underline underline-offset-2" href="tel:18008899789">
             1-800-889-9789
           </a>

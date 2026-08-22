@@ -11,13 +11,13 @@ const liveUrl = process.env.CAP_DEV_URL?.trim() || "http://localhost:8080";
 
 const config: CapacitorConfig = {
   appId: "com.webbspinnervisions.volunteerscratchvault",
-  appName: "Volunteer Scratch Vault",
+  appName: "Scratch Vault",
   webDir: "dist",
   backgroundColor: "#0B0F0C",
   ios: {
     contentInset: "automatic",
     preferredContentMode: "mobile",
-    scheme: "Volunteer Scratch Vault",
+    scheme: "Scratch Vault",
   },
   android: {
     allowMixedContent: false,

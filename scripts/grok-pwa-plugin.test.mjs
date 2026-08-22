@@ -209,6 +209,15 @@ test("vite config keeps the nitro serverDir wiring", () => {
   assert.match(viteConfig, /grokPwaPlugin\(\)/);
 });
 
+test("vercel.json and Nitro Vercel config both register daily-fetch cron", () => {
+  const vercel = readFileSync(join(TEMPLATE_ROOT, "vercel.json"), "utf8");
+  const viteConfig = readFileSync(join(TEMPLATE_ROOT, "vite.config.ts"), "utf8");
+  assert.match(vercel, /\/api\/cron\/daily-fetch/);
+  assert.match(vercel, /15 11 \* \* \*/);
+  assert.match(viteConfig, /\/api\/cron\/daily-fetch/);
+  assert.match(viteConfig, /15 11 \* \* \*/);
+});
+
 test("nitro middleware and its bundled assets exist", () => {
   const middleware = readFileSync(join(TEMPLATE_ROOT, "server/middleware/grok-pwa.ts"), "utf8");
   assert.match(middleware, /install-page\.html\?raw/);

@@ -1,29 +1,41 @@
-# Volunteer Scratch Vault
+# Scratch Vault
 
-Independent heat map of Tennessee Lottery scratch-off remaining prizes.
+Independent remaining-prize desk for scratch-off games.
 
-**Not affiliated with, endorsed by, or connected to the Tennessee Education Lottery Corporation.**
+**Not affiliated with, endorsed by, or connected to any state lottery.**
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/SpiderForce-Star/Volunteer-Scratch-Vault)
 
 **One-click live site:** [Import this repo on Vercel](https://vercel.com/new/import?s=https://github.com/SpiderForce-Star/Volunteer-Scratch-Vault)
 
-That opens Vercel signed in with GitHub, creates the project, and gives you a `*.vercel.app` URL. No extra env vars are required.
+That opens Vercel signed in with GitHub, creates the project, and gives you a `*.vercel.app` URL. The existing production URL (`https://volunteer-scratch-vault.vercel.app`) stays live; the Vercel project can be renamed later.
 
 ## What it does
 
-Live desk ranks $5, $10, $20, and $25+ instant games by:
+Scratch Vault ranks $5, $10, $20, $25, $30, and $50 instant games from public remaining-prize counts:
 
-- **Grand heat** — jackpots still in retail after subtracting Tennessee’s Play It Again holdback
-- **Medium heat** — mid-tier remaining prizes
-- **Bust / avoid** — no effective retail top, or a drained mid-tier
+- **Grand heat** — jackpots still in retail after known holdbacks (Tennessee’s Play It Again rule treats a posted “1 left” as no retail jackpot)
+- **Medium heat** — mid-tier remaining prizes, so you skip games that look fine on top and are drained in the middle
+- **Bust / avoid** — no effective retail top, or a collapsed mid-tier
 - **Cash-out games** — Frenzy-style tickets whose “top prize” is a medium cash prize
 
-Printed overall odds are not used to rank tickets. Full disclaimer and problem-gambling help are in the app.
+Printed overall odds are not used to rank tickets. The desk does **not** improve the odds of any individual ticket and does **not** “beat the lottery.”
+
+### Multi-state desks
+
+Selector order: **TN KY SC OK MI AZ NC PA TX MO OH IL MA IA ID CT**.
+
+| State | Desk | Holdback | Age |
+|---|---|---|---|
+| Tennessee (default) | Live overlay | Play It Again (subtract 1 top prize) | 18+ |
+| Kentucky, South Carolina, Oklahoma, Michigan, North Carolina, Pennsylvania, Texas, Missouri, Ohio, Illinois, Massachusetts, Iowa, Idaho, Connecticut | Compiled official remaining-prize tables | None | 18+ |
+| Arizona | Compiled top prizes remaining (mids only when published) | None | 21+ |
+
+State configs live in [`src/config/states.ts`](src/config/states.ts). Catalogs load through [`src/data/states/`](src/data/states/). Daily remaining-prize fetch: `GET /api/cron/daily-fetch` at `15 11 * * *` (06:15 CT).
 
 ## Stack
 
-React 19 · TypeScript · Vite · TanStack Start · Tailwind v4
+React 19 · TypeScript · Vite · TanStack Start · Tailwind v4 · TanStack Query
 
 ## Native / stores
 
@@ -38,17 +50,23 @@ npm run dev
 
 ```bash
 npm run typecheck
+npm run test
 npm run build
 ```
 
 ## Data
 
-Catalog: [`src/data/games.ts`](src/data/games.ts)  
-Heat / desk: [`src/lib/heat.ts`](src/lib/heat.ts)
+Tennessee catalog: [`src/data/games.ts`](src/data/games.ts)  
+State configs: [`src/config/states.ts`](src/config/states.ts)  
+Heat / desk: [`src/lib/heat.ts`](src/lib/heat.ts), [`src/lib/heat.server.ts`](src/lib/heat.server.ts)
 
-Sources: [Tennessee Lottery remaining prizes](https://tnlottery.com/remaining-prizes/) and other published public counts.
+Tennessee source: [Tennessee Lottery scratch-offs](https://www.tnlottery.com/games/scratch-offs). Other desks use that state’s official remaining-prize page. Counts are compiled snapshots, not live store inventory. Iowa’s official table lists remaining prizes of $50 and greater.
 
 Ticket faces are independent reconstructions for store identification. They are not official Lottery scans.
+
+## Stripe
+
+Checkout still uses the existing live Price IDs. Rename the products in the Stripe Dashboard to **Scratch Vault Full Access** (monthly and annual) so customer receipts and the hosted checkout page match the app. Webhook URL is unchanged: `https://volunteer-scratch-vault.vercel.app/api/stripe/webhook`.
 
 ## Disclaimer
 

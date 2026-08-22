@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capacitor / web splash: VSV monogram, radar ring, no baked rounded-rect."""
+"""Capacitor / web splash: SV monogram, radar ring, no baked rounded-rect."""
 
 from pathlib import Path
 
@@ -47,8 +47,8 @@ def compose(size: tuple[int, int]) -> Image.Image:
         width=max(1, w // 700),
     )
     mark = font(max(28, r // 2))
-    box = draw.textbbox((0, 0), "VSV", font=mark)
-    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "VSV", font=mark, fill=PAPER)
+    box = draw.textbbox((0, 0), "SV", font=mark)
+    draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2 - 4), "SV", font=mark, fill=PAPER)
     word = font(max(14, w // 48), mono=True)
     draw_centered(draw, "VOLUNTEER SCRATCH VAULT", cy + r + int(h * 0.04), word, GOLD, w)
     return img

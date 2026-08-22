@@ -7,6 +7,8 @@ import {
 } from "@/data/games";
 import type { HeatReport } from "@/lib/heat";
 import { LockedPanel } from "@/components/locked-panel";
+import { useActiveState } from "@/lib/active-state";
+import { useI18n } from "@/lib/locale";
 
 export function PostedBookPanel({
   game,
@@ -17,34 +19,38 @@ export function PostedBookPanel({
   heat: HeatReport;
   locked: boolean;
 }) {
+  const { config } = useActiveState();
+  const { t } = useI18n();
   const book = postedBook(game);
   const retailPool = retailTopPool(game.topPrize, heat.effectiveTop);
   const headline = locked ? book.topPool : book.knownPool || book.topPool;
+  const holdback = config.holdback;
 
   return (
     <section className="mt-8">
       <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-        Still posted
+        {t("posted.kicker")}
       </p>
       <h2 className="mt-2 font-display text-2xl tracking-tight">
-        How much cash is still listed
+        {t("posted.title")}
       </h2>
       <p className="mt-1 text-sm text-faint">
-        Published remaining × prize amount. Not live store inventory. Unpublished
-        lower tiers are missing from this total.
+        {t("posted.note")}
       </p>
 
       <div className="mt-4 rounded-xl border border-line bg-surface p-5">
         <p className="text-sm text-muted">
-          {locked ? "Top tier still listed" : "Published tiers still listed"}
+          {locked ? t("posted.topTier") : t("posted.published")}
         </p>
         <p className="mt-2 font-display text-4xl tabular-nums tracking-tight">
           {headline == null ? "—" : moneyFull(headline)}
         </p>
         {heat.role === "jackpot" && retailPool != null ? (
           <p className="mt-2 text-sm text-muted">
-            After Play It Again holdback: {moneyFull(retailPool)} still in play
-            at retail
+            {holdback
+              ? t("posted.afterHoldback", { label: holdback.label })
+              : t("posted.effective")}
+            {moneyFull(retailPool)} still in play at retail
             {heat.effectiveTop != null
               ? ` · ${heat.effectiveTop.toLocaleString()} top prize${heat.effectiveTop === 1 ? "" : "s"}`
               : ""}
@@ -52,19 +58,22 @@ export function PostedBookPanel({
         ) : null}
         {book.topPool != null && heat.topRemaining != null ? (
           <p className="mt-1 text-sm text-faint">
-            Top tier: {heat.topRemaining.toLocaleString()} × {money(game.topPrize)}{" "}
-            = {moneyFull(book.topPool)}
+            {t("posted.topRow", {
+              count: heat.topRemaining.toLocaleString(),
+              prize: money(game.topPrize),
+              total: moneyFull(book.topPool),
+            })}
           </p>
         ) : (
-          <p className="mt-1 text-sm text-faint">Top-tier remaining is not posted.</p>
+          <p className="mt-1 text-sm text-faint">{t("posted.topMissing")}</p>
         )}
       </div>
 
       {locked ? (
         <div className="mt-4">
           <LockedPanel
-            title="Mid-tier book is in the Vault"
-            teaser="See remaining counts and dollar totals for every published prize tier on this ticket."
+            title={t("posted.lockedTitle")}
+            teaser={t("posted.lockedTeaser")}
           />
         </div>
       ) : (

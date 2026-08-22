@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { GAMES, money } from "@/data/games";
-import { DESK_META } from "@/data/desk-meta";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { money } from "@/data/games";
+import { publicCatalog } from "@/data/states";
+import {
+  DEFAULT_STATE_ID,
+  type StateId,
+  getState,
+  isStateId,
+} from "@/config/states";
 import {
   inPriceFilter,
   pickOpeningFiveDollarGames,
@@ -19,13 +25,30 @@ import { UnlockStrip } from "@/components/unlock-strip";
 import { DeskAlertBanner } from "@/components/desk-alert-banner";
 import { TripCard } from "@/components/trip-card";
 import { TrialCta } from "@/components/trial-cta";
+import { StateSelector } from "@/components/state-selector";
+import {
+  HowTheDataWorks,
+  HowThisHelps,
+  ProductStory,
+  WhatThisAppIs,
+} from "@/components/product-story";
+import { DataModeBanner } from "@/components/data-mode-banner";
+import { TonightHeatStrip } from "@/components/tonight-heat-strip";
+import { StateRulesNote } from "@/components/state-rules";
 import { useAccess } from "@/lib/use-access";
+import { useActiveState } from "@/lib/active-state";
 import { writePricePref, pricePrefLabel } from "@/lib/price-pref";
 import { SITE_DESCRIPTION, SITE_TITLE, pageHead } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/locale";
+import type { MessageKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   component: VaultHome,
+  validateSearch: (search: Record<string, unknown>): { state?: StateId } => {
+    if (isStateId(search.state)) return { state: search.state };
+    return {};
+  },
   head: () =>
     pageHead({
       title: SITE_TITLE,
@@ -44,16 +67,20 @@ const FILTERS: { id: PriceFilter; label: string }[] = [
   { id: "50", label: "$50" },
 ];
 
-const SORTS: { id: SortKey; label: string }[] = [
-  { id: "heat", label: "Best overall" },
-  { id: "medium", label: "Best mid-tier" },
-  { id: "safest", label: "Safest (avoid busts)" },
-  { id: "grand", label: "Grand prizes" },
-  { id: "price", label: "Price" },
-  { id: "name", label: "Name" },
+const SORTS: { id: SortKey; labelKey: MessageKey }[] = [
+  { id: "heat", labelKey: "home.sortHeat" },
+  { id: "medium", labelKey: "home.sortMedium" },
+  { id: "safest", labelKey: "home.sortSafest" },
+  { id: "grand", labelKey: "home.sortGrand" },
+  { id: "price", labelKey: "home.sortPrice" },
+  { id: "name", labelKey: "home.sortName" },
 ];
 
 function VaultHome() {
+  const navigate = useNavigate({ from: "/" });
+  const search = Route.useSearch();
+  const { stateId, setStateId, config } = useActiveState();
+  const { t } = useI18n();
   const [filter, setFilter] = useState<PriceFilter>("all");
   const [sort, setSort] = useState<SortKey>("safest");
   const [query, setQuery] = useState("");
@@ -63,8 +90,15 @@ function VaultHome() {
   const [lateNight, setLateNight] = useState(false);
 
   useEffect(() => {
+    if (search.state && search.state !== stateId) {
+      setStateId(search.state);
+    }
+  }, [search.state, setStateId, stateId]);
+
+  useEffect(() => {
     let cancelled = false;
-    void getDeskSnapshot()
+    setSnap(null);
+    void getDeskSnapshot({ data: { stateId } })
       .then((next) => {
         if (!cancelled) setSnap(next);
       })
@@ -74,7 +108,17 @@ function VaultHome() {
     return () => {
       cancelled = true;
     };
-  }, [paid]);
+  }, [paid, stateId]);
+
+  const selectState = (id: StateId) => {
+    setFilter("all");
+    setStateId(id);
+    void navigate({
+      to: "/",
+      search: id === DEFAULT_STATE_ID ? {} : { state: id },
+      replace: true,
+    });
+  };
 
   useEffect(() => {
     try {
@@ -97,7 +141,7 @@ function VaultHome() {
     writePricePref(next);
   };
 
-  const catalog = snap?.games ?? GAMES;
+  const catalog = snap?.games ?? publicCatalog(stateId);
   const reports = useMemo(
     () => (snap ? reportMap(snap.reports) : new Map()),
     [snap],
@@ -107,7 +151,13 @@ function VaultHome() {
     mediumLeaders: [],
     avoid: [],
     official: [],
-    stats: { games: GAMES.length, retailJackpots: 0, cashOuts: 0, busts: 0, officialTiers: 0 },
+    stats: {
+      games: catalog.length,
+      retailJackpots: 0,
+      cashOuts: 0,
+      busts: 0,
+      officialTiers: 0,
+    },
   };
 
   const openingFive = useMemo(
@@ -139,34 +189,57 @@ function VaultHome() {
 
   return (
     <div>
+      <StateSelector value={stateId} onChange={selectState} />
+      <DataModeBanner
+        state={snap ? getState(snap.stateId) : config}
+        loadError={snap?.loadError}
+        stale={snap?.stale}
+        weekLabel={snap?.weekLabel}
+      />
       <p className="border-b border-line px-4 py-2 text-center font-mono text-[10px] tracking-[0.16em] text-faint uppercase sm:px-6">
-        {snap?.weekLabel ?? DESK_META.weekLabel} ·{" "}
-        {snap?.gameCount ?? GAMES.length} TN games tracked
+        {snap?.weekLabel ?? config.weekLabel} ·{" "}
+        {t("home.tracked", {
+          count: snap?.gameCount ?? catalog.length,
+          short: config.shortName,
+        })}
       </p>
+      <TonightHeatStrip
+        stateId={stateId}
+        cards={snap?.tonight ?? []}
+        depleted={snap?.tonightDepleted ?? false}
+      />
       {lateNight ? (
         <p className="border-b border-line bg-raised/50 px-4 py-3 text-center text-sm text-muted sm:px-6">
-          Desk is for store hours. Review now, buy later if you still want to.
-          18+.
+          {t("home.lateNight")}
         </p>
       ) : null}
       <DeskAlertBanner />
+      <ProductStory />
+      <HowTheDataWorks />
+      <HowThisHelps />
+      <WhatThisAppIs />
+      <StateRulesNote state={config} />
       <RadarCashHero
         priceFilter={filter}
         blips={snap?.blips ?? []}
-        gameCount={snap?.gameCount ?? GAMES.length}
+        gameCount={snap?.gameCount ?? catalog.length}
         skipHref="#tonight"
+        stateName={config.name}
+        shortName={config.shortName}
+        weekLabel={snap?.weekLabel ?? config.weekLabel}
+        minAge={config.minAge}
       />
 
       <section id="tonight" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            Tonight’s $5 desk
+            {t("tonight.kicker")}
           </p>
           <h2 className="mt-2 font-display text-2xl tracking-tight">
-            Four $5 tickets — hot, warm, cold, pass
+            {t("tonight.title")}
           </h2>
           {!snap ? (
-            <p className="mt-4 text-muted">Loading the desk…</p>
+            <p className="mt-4 text-muted">{t("home.loading")}</p>
           ) : (
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {openingFive.map((game) => {
@@ -189,10 +262,12 @@ function VaultHome() {
       <section className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-            {prefLabel ? `Your ${prefLabel} desk` : "Best still-posted by price"}
+            {prefLabel
+              ? t("home.yourDesk", { price: prefLabel })
+              : t("home.bestByPrice")}
           </p>
           <h2 className="mt-2 font-display text-2xl tracking-tight">
-            Highest remaining-prize heat at each price
+            {t("home.highest")}
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {desk.byPrice.map((row) =>
@@ -201,6 +276,7 @@ function VaultHome() {
                   key={row.price}
                   to="/game/$number"
                   params={{ number: String(row.pick.game.number) }}
+                  search={{ state: stateId }}
                   className="min-h-11 rounded-lg border border-line bg-surface p-4 hover:border-gold/50"
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -214,7 +290,7 @@ function VaultHome() {
                     {row.pick.why}
                   </p>
                   <p className="mt-1 font-mono text-[10px] text-faint">
-                    Top {money(row.pick.game.topPrize)}
+                    {t("home.top", { prize: money(row.pick.game.topPrize) })}
                   </p>
                 </Link>
               ) : (
@@ -222,7 +298,7 @@ function VaultHome() {
                   key={row.price}
                   className="rounded-lg border border-line p-4 text-sm text-faint"
                 >
-                  {row.price}: nothing still posted
+                  {t("home.nothingPosted", { price: row.price })}
                 </div>
               ),
             )}
@@ -233,10 +309,10 @@ function VaultHome() {
       <section id="skip" className="border-b border-line">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <p className="font-mono text-[10px] tracking-[0.16em] text-danger uppercase">
-            Skip these
+            {t("home.skipKicker")}
           </p>
           <h2 className="mt-2 font-display text-2xl tracking-tight">
-            Don’t spend a book on a drained game
+            {t("home.skipTitle")}
           </h2>
           <ul className="mt-4 divide-y divide-line border border-line">
             {desk.avoid.slice(0, 3).map((p) => (
@@ -244,13 +320,14 @@ function VaultHome() {
                 <Link
                   to="/game/$number"
                   params={{ number: String(p.game.number) }}
+                  search={{ state: stateId }}
                   className="flex min-h-11 items-center justify-between gap-3 px-3 py-3 hover:bg-raised"
                 >
                   <span className="truncate text-sm">
                     ${p.game.price} · {p.game.name}
                   </span>
                   <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-danger uppercase">
-                    Skip
+                    {t("home.skip")}
                   </span>
                 </Link>
               </li>
@@ -267,10 +344,10 @@ function VaultHome() {
       />
 
       <div id="desk">
-        <DeskReviewPanel desk={desk} locked={locked} />
+        <DeskReviewPanel desk={desk} locked={locked} state={config} />
       </div>
 
-      <UnlockStrip locked={locked} stats={snap?.stats} />
+      <UnlockStrip locked={locked} stats={snap?.stats} holdback={config.holdback} />
 
       <div className="sticky top-[57px] z-10 border-b border-line bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:px-6">
@@ -287,23 +364,23 @@ function VaultHome() {
                     : "bg-surface text-muted hover:text-fg",
                 )}
               >
-                {f.label}
+                {f.id === "all" ? t("home.filterAll") : f.label}
               </button>
             ))}
           </div>
           <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:justify-end">
             <label className="sr-only" htmlFor="q">
-              Search games
+              {t("home.search")}
             </label>
             <input
               id="q"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search name or #"
+              placeholder={t("home.searchPh")}
               className="min-h-11 w-full rounded-md border border-line bg-surface px-3 text-sm text-fg placeholder:text-faint sm:max-w-56"
             />
             <label className="sr-only" htmlFor="sort">
-              Sort
+              {t("home.sort")}
             </label>
             <select
               id="sort"
@@ -313,7 +390,7 @@ function VaultHome() {
             >
               {SORTS.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.label}
+                  {t(s.labelKey)}
                 </option>
               ))}
             </select>
@@ -325,17 +402,17 @@ function VaultHome() {
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <p className="text-sm text-faint">
             {locked
-              ? `${list.length} games · mid-tier book is Vault`
-              : `${list.length} games`}
+              ? t("home.gamesLocked", { count: list.length })
+              : t("home.games", { count: list.length })}
           </p>
           <p className="rounded-md border border-line bg-surface px-3 py-2 font-mono text-xs tracking-wide text-muted uppercase">
-            Updated {DESK_META.weekLabel}. Not live store inventory.
+            {t("inventory.updatedNotLive", { week: config.weekLabel })}
           </p>
         </div>
         {!snap ? (
-          <p className="text-muted">Loading the desk…</p>
+          <p className="text-muted">{t("home.loading")}</p>
         ) : publicList.length === 0 ? (
-          <p className="text-muted">No games match that filter.</p>
+          <p className="text-muted">{t("home.none")}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {publicList.map((game) => {
@@ -355,19 +432,19 @@ function VaultHome() {
         {locked ? (
           <div className="mt-6 flex flex-col items-start gap-3 rounded-lg border border-line bg-surface p-5">
             <p className="text-sm text-muted">
-              Full mid-tier table is in the Vault. Review before you buy.
+              {t("home.vaultTeaser")}
             </p>
             <TrialCta />
           </div>
         ) : (
           <p className="mt-8 text-sm text-muted">
-            You’re done. Put the phone away.
+            {t("home.done")}
           </p>
         )}
 
         <div className="mt-10 max-w-3xl">
           <p className="mb-3 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-            Full disclaimer
+            {t("home.fullDisclaimer")}
           </p>
           <DisclaimerLead />
           <div className="mt-4">

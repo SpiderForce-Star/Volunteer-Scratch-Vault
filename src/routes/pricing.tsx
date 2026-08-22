@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { createCheckoutSession } from "@/lib/billing";
-import { TRIAL_CTA } from "@/components/trial-cta";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useAccess } from "@/lib/use-access";
 import { isNativeApp } from "@/lib/native";
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { pageHead } from "@/lib/site";
 import { CHECKOUT_PUBLIC, isNetworkError } from "@/lib/stripe-errors";
+import { useI18n } from "@/lib/locale";
 
 type CheckoutNotice = "canceled" | "failed" | "declined";
 
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/pricing")({
     pageHead({
       title: "Pricing",
       description:
-        "Full Tennessee remaining-prize desk. $4.99/month or $49.99/year with a 7-day free trial. Card required. Cancel anytime. 18+. Independent of the Lottery.",
+        "Scratch Vault Full Access. $4.99/month or $49.99/year with a 7-day free trial. Card required. Cancel anytime. 18+ to use; Arizona Lottery tickets are 21+. Independent remaining-prize desk. Not affiliated with any lottery.",
       path: "/pricing",
     }),
 });
@@ -68,6 +68,7 @@ function PricingPage() {
   );
   const [error, setError] = useState<string | null>(null);
   const native = isNativeApp();
+  const { t } = useI18n();
 
   const startCheckout = async (plan: "monthly" | "annual") => {
     if (isPending || accessPending) return;
@@ -80,7 +81,7 @@ function PricingPage() {
           window.location.href = "/";
           return;
         }
-        setError("Purchase finished but Full Access is not active yet. Try Restore purchases.");
+        setError(t("pricing.purchasePending"));
         setLoading(null);
         return;
       }
@@ -92,7 +93,7 @@ function PricingPage() {
       if (result?.url) {
         window.location.href = result.url;
       } else {
-        setError("Could not start checkout. Please try again.");
+        setError(t("pricing.checkoutFail"));
         setLoading(null);
       }
     } catch (err) {
@@ -119,9 +120,9 @@ function PricingPage() {
         window.location.href = "/";
         return;
       }
-      setError("No active Full Access purchase was found for this store account.");
+      setError(t("pricing.restoreEmpty"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Restore failed.");
+      setError(err instanceof Error ? err.message : t("pricing.restoreFailed"));
     } finally {
       setLoading(null);
     }
@@ -131,16 +132,13 @@ function PricingPage() {
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
       <div className="text-center">
         <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
-          Full access
+          {t("pricing.kicker")}
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">
-          Unlock the complete Tennessee desk
+          {t("pricing.title")}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-muted">
-          Full remaining-prize rankings, mid-tier leaders, the skip list, and
-          radar alerts when new official counts hit the desk. Start with a
-          7-day free trial. A credit or debit card is required to start.
-          Cancel anytime.
+          {t("pricing.lead")}
         </p>
       </div>
 
@@ -156,16 +154,15 @@ function PricingPage() {
 
       {native ? (
         <p className="mt-6 text-center text-sm text-muted">
-          Full Access is $4.99/month or $49.99/year with a 7-day free trial
-          (card required), billed through the App Store or Google Play.
+          {t("pricing.native")}
         </p>
       ) : null}
 
       {paid ? (
         <p className="mt-6 text-center text-sm text-hot">
-          Your desk is already unlocked.{" "}
+          {t("pricing.unlocked")}{" "}
           <Link to="/account" className="underline underline-offset-2">
-            Manage billing
+            {t("pricing.manage")}
           </Link>
         </p>
       ) : null}
@@ -173,45 +170,45 @@ function PricingPage() {
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <div className="rounded-xl border border-gold bg-surface p-6 ring-1 ring-gold/30 sm:order-2">
           <p className="font-mono text-xs tracking-wide text-gold uppercase">
-            Annual · Best value · save ~$10
+            {t("pricing.annual")}
           </p>
           <p className="mt-2 font-display text-3xl">
-            $49.99<span className="text-lg text-muted">/year</span>
+            $49.99<span className="text-lg text-muted">{t("pricing.perYear")}</span>
           </p>
-          <p className="mt-1 text-sm text-muted">7-day free trial · card required</p>
+          <p className="mt-1 text-sm text-muted">{t("pricing.trialCard")}</p>
           <button
             type="button"
             disabled={loading !== null || paid}
             onClick={() => startCheckout("annual")}
             className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md bg-gold px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
           >
-            {loading === "annual" ? "Starting trial…" : TRIAL_CTA}
+            {loading === "annual" ? t("pricing.starting") : t("cta.trial")}
           </button>
         </div>
 
         <div className="rounded-xl border border-line bg-surface p-6 sm:order-1">
           <p className="font-mono text-xs tracking-wide text-faint uppercase">
-            Monthly
+            {t("pricing.monthly")}
           </p>
           <p className="mt-2 font-display text-3xl">
-            $4.99<span className="text-lg text-muted">/mo</span>
+            $4.99<span className="text-lg text-muted">{t("pricing.perMo")}</span>
           </p>
-          <p className="mt-1 text-sm text-muted">7-day free trial · card required</p>
+          <p className="mt-1 text-sm text-muted">{t("pricing.trialCard")}</p>
           <button
             type="button"
             disabled={loading !== null || paid}
             onClick={() => startCheckout("monthly")}
             className="mt-8 flex min-h-12 w-full items-center justify-center rounded-md border border-line px-4 text-sm text-paper disabled:opacity-60"
           >
-            {loading === "monthly" ? "Starting trial…" : TRIAL_CTA}
+            {loading === "monthly" ? t("pricing.starting") : t("cta.trial")}
           </button>
         </div>
       </div>
 
       <ul className="mx-auto mt-8 max-w-md space-y-1 text-center text-sm text-muted">
-        <li>Full heat desk</li>
-        <li>Skip / bust list</li>
-        <li>Radar when new counts drop</li>
+        <li>{t("pricing.featHeat")}</li>
+        <li>{t("pricing.featSkip")}</li>
+        <li>{t("pricing.featRadar")}</li>
       </ul>
 
       {error && (
@@ -219,18 +216,18 @@ function PricingPage() {
       )}
 
       <p className="mx-auto mt-8 max-w-md text-center text-xs leading-relaxed text-faint">
-        By starting a trial you agree to the{" "}
+        {t("pricing.agree")}{" "}
         <Link to="/terms" className="underline underline-offset-2 hover:text-fg">
-          Terms
+          {t("footer.terms")}
         </Link>{" "}
-        and{" "}
+        {t("pricing.and")}{" "}
         <Link
           to="/privacy"
           className="underline underline-offset-2 hover:text-fg"
         >
-          Privacy Policy
+          {t("pricing.privacyPolicy")}
         </Link>
-        . 18+ only.
+        . {t("pricing.only18")}
       </p>
 
       {native ? (
@@ -240,66 +237,37 @@ function PricingPage() {
           onClick={() => void restore()}
           className="mx-auto mt-6 flex min-h-11 items-center justify-center text-sm text-muted underline underline-offset-2 hover:text-fg disabled:opacity-60"
         >
-          {loading === "restore" ? "Restoring…" : "Restore purchases"}
+          {loading === "restore" ? t("pricing.restoring") : t("pricing.restore")}
         </button>
       ) : null}
 
       <section className="mx-auto mt-16 max-w-2xl">
-        <h2 className="font-display text-2xl tracking-tight">Pricing FAQ</h2>
+        <h2 className="font-display text-2xl tracking-tight">{t("pricing.faqTitle")}</h2>
         <Accordion type="single" collapsible className="mt-4">
           <AccordionItem value="trial">
-            <AccordionTrigger>How long is the free trial?</AccordionTrigger>
-            <AccordionContent>
-              7 days. A credit or debit card and billing details are required
-              to start — no card, no trial. Cancel anytime before it ends and
-              you will not be charged. Trial access is full access.
-            </AccordionContent>
+            <AccordionTrigger>{t("pricing.faqTrialQ")}</AccordionTrigger>
+            <AccordionContent>{t("pricing.faqTrialA")}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="cancel">
-            <AccordionTrigger>Can I cancel anytime?</AccordionTrigger>
-            <AccordionContent>
-              Yes. On the website, use Manage billing. In the iOS or Android
-              app, use Manage subscription to open the App Store or Google Play
-              subscription page. Access stays open through the paid or trial
-              period.
-            </AccordionContent>
+            <AccordionTrigger>{t("pricing.faqCancelQ")}</AccordionTrigger>
+            <AccordionContent>{t("pricing.faqCancelA")}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="includes">
-            <AccordionTrigger>What does full access include?</AccordionTrigger>
-            <AccordionContent>
-              The official three-tier remaining-prize table, mid-tier leaders,
-              the skip/bust list, heat scores, game-by-game remaining top
-              and mid counts, and radar alerts when new remaining-prize data
-              is ready to review. The free homepage still shows a teaser desk
-              and the legal disclaimer.
-            </AccordionContent>
+            <AccordionTrigger>{t("pricing.faqIncludesQ")}</AccordionTrigger>
+            <AccordionContent>{t("pricing.faqIncludesA")}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="lottery">
-            <AccordionTrigger>
-              Is this affiliated with the Tennessee Lottery?
-            </AccordionTrigger>
-            <AccordionContent>
-              No. Volunteer Scratch Vault is an independent information product
-              of Webb Spinner Visions. It is not affiliated with, endorsed by,
-              or connected to the Tennessee Education Lottery Corporation.
-            </AccordionContent>
+            <AccordionTrigger>{t("pricing.faqLotteryQ")}</AccordionTrigger>
+            <AccordionContent>{t("pricing.faqLotteryA")}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="age">
-            <AccordionTrigger>Do I have to be 18?</AccordionTrigger>
-            <AccordionContent>
-              Yes. Tennessee Lottery tickets are 18+. Remaining counts do not
-              improve the odds of winning any prize. This tool does not sell
-              tickets.
-            </AccordionContent>
+            <AccordionTrigger>{t("pricing.faqAgeQ")}</AccordionTrigger>
+            <AccordionContent>{t("pricing.faqAgeA")}</AccordionContent>
           </AccordionItem>
         </Accordion>
       </section>
 
-      <p className="mt-10 text-center text-xs text-faint">
-        18+ only. This is an independent information tool, not affiliated with the
-        Tennessee Lottery. Remaining counts do not improve your odds. Play
-        responsibly.
-      </p>
+      <p className="mt-10 text-center text-xs text-faint">{t("pricing.foot")}</p>
     </div>
   );
 }

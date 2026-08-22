@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rasterize store + PWA icons, splashes, and screenshot placeholders.
 
-VSV lettering is drawn in code so it cannot come out misspelled.
+SV lettering is drawn in code so it cannot come out misspelled.
 Backgrounds are the editorial desk textures generated for this brand.
 """
 
@@ -80,8 +80,8 @@ def make_icon(size: int, padded: bool = False) -> Image.Image:
     draw = ImageDraw.Draw(canvas)
     mark = font(int(size * (0.22 if padded else 0.28)))
     sub = font(max(10, int(size * 0.045)), mono=True)
-    draw_centered(draw, "VSV", int(size * (0.38 if padded else 0.34)), mark, INK, size)
-    draw_centered(draw, "TENNESSEE DESK", int(size * 0.66), sub, GOLD, size)
+    draw_centered(draw, "SV", int(size * (0.38 if padded else 0.34)), mark, INK, size)
+    draw_centered(draw, "SCRATCH VAULT", int(size * 0.66), sub, GOLD, size)
     return flatten_rgb(canvas)
 
 
@@ -91,8 +91,8 @@ def make_adaptive_fg(size: int = 1024) -> Image.Image:
     mark = font(int(size * 0.2))
     sub = font(int(size * 0.04), mono=True)
     # Stay inside the 66% safe zone
-    draw_centered(draw, "VSV", int(size * 0.40), mark, (*INK, 255), size)
-    draw_centered(draw, "TENNESSEE DESK", int(size * 0.62), sub, (*GOLD, 255), size)
+    draw_centered(draw, "SV", int(size * 0.40), mark, (*INK, 255), size)
+    draw_centered(draw, "SCRATCH VAULT", int(size * 0.62), sub, (*GOLD, 255), size)
     return img
 
 
@@ -104,9 +104,9 @@ def make_splash(size: tuple[int, int]) -> Image.Image:
     mark = font(int(w * 0.14))
     title = font(int(w * 0.055))
     sub = font(int(w * 0.028), mono=True)
-    draw_centered(draw, "VSV", int(h * 0.38), mark, INK, w)
-    draw_centered(draw, "Volunteer Scratch Vault", int(h * 0.50), title, INK, w)
-    draw_centered(draw, "INDEPENDENT TENNESSEE DESK", int(h * 0.56), sub, GOLD, w)
+    draw_centered(draw, "SV", int(h * 0.38), mark, INK, w)
+    draw_centered(draw, "Scratch Vault", int(h * 0.50), title, INK, w)
+    draw_centered(draw, "INDEPENDENT REMAINING-PRIZE DESK", int(h * 0.56), sub, GOLD, w)
     draw_centered(draw, "18+", int(h * 0.86), sub, FAINT, w)
     return flatten_rgb(canvas)
 
@@ -130,9 +130,9 @@ def make_screenshot(size: tuple[int, int], kind: str, label: str) -> Image.Image
     draw.text((pad, int(h * 0.012)), "9:41", font=small, fill=MUTED)
 
     y = int(h * 0.06)
-    draw.text((pad, y), "VSV", font=display, fill=INK)
-    draw.text((pad, y + int(h * 0.055)), "Volunteer Scratch Vault", font=body, fill=INK)
-    draw.text((pad, y + int(h * 0.095)), "TENNESSEE · INDEPENDENT DESK", font=mono, fill=GOLD)
+    draw.text((pad, y), "SV", font=display, fill=INK)
+    draw.text((pad, y + int(h * 0.055)), "Scratch Vault", font=body, fill=INK)
+    draw.text((pad, y + int(h * 0.095)), "INDEPENDENT REMAINING-PRIZE DESK", font=mono, fill=GOLD)
 
     y = int(h * 0.20)
     if kind == "desk":

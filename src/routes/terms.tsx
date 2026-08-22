@@ -8,7 +8,7 @@ export const Route = createFileRoute("/terms")({
     pageHead({
       title: "Terms of Service",
       description:
-        "Terms of use for Volunteer Scratch Vault. Independent remaining-prize desk. 18+. Not affiliated with the Tennessee Education Lottery.",
+        "Terms of use for Scratch Vault. Independent remaining-prize desk. 18+ to use; Arizona Lottery tickets are 21+. Not affiliated with any state lottery.",
       path: "/terms",
     }),
 });
@@ -23,7 +23,7 @@ function TermsPage() {
         Terms of Service
       </h1>
       <p className="mt-4 text-sm leading-relaxed text-muted">
-        These Terms govern your use of Volunteer Scratch Vault, an independent
+        These Terms govern your use of Scratch Vault, an independent
         remaining-prize information product of Webb Spinner Visions. By using
         the website, the native apps, or starting a trial, you agree to these
         Terms and to the{" "}
@@ -35,7 +35,7 @@ function TermsPage() {
 
       <Section title="1. Who we are">
         <p>
-          Volunteer Scratch Vault is operated by Webb Spinner Visions. Contact:{" "}
+          Scratch Vault is operated by Webb Spinner Visions. Contact:{" "}
           <a
             className="underline underline-offset-2 hover:text-fg"
             href="mailto:webbspinnervisions@gmail.com"
@@ -46,19 +46,20 @@ function TermsPage() {
         </p>
         <p className="mt-3">
           This product is not a lottery, not a ticket seller, and not affiliated
-          with, endorsed by, sponsored by, or connected to the Tennessee
-          Education Lottery Corporation or any other lottery operator.
+          with, endorsed by, sponsored by, or connected to any state lottery,
+          including the Tennessee Education Lottery Corporation.
         </p>
       </Section>
 
       <Section title="2. What this product is">
         <p>
-          The Vault compiles remaining-prize counts from the publicly posted
-          Tennessee Lottery remaining-prizes table and other published game
-          information, usually once a week. Counts are not live store
-          inventory. You cannot buy, scan, check, or redeem tickets here.
-          Remaining counts change as tickets sell. Remaining counts do not
-          improve the odds of winning any prize.
+          The Vault compiles remaining-prize counts from publicly posted
+          remaining-prizes tables and other published game information.
+          Tennessee uses the live public table when available; other desks may
+          be compiled snapshots or demo catalogs and are labeled as such.
+          Counts are not live store inventory. You cannot buy, scan, check, or
+          redeem tickets here. Remaining counts change as tickets sell.
+          Remaining counts do not improve the odds of winning any prize.
         </p>
         <p className="mt-3">
           Ticket faces shown in the product are independent reconstructions for
@@ -68,9 +69,11 @@ function TermsPage() {
 
       <Section title="3. Eligibility">
         <p>
-          You must be 18 or older. Tennessee Lottery tickets are 18+. If you
-          are under 18, do not use this product. We may suspend or close an
-          account if we reasonably believe the user is under 18.
+          You must be 18 or older to use this product. Lottery purchase ages
+          vary by state: 18+ in Tennessee, Kentucky, South Carolina, Oklahoma,
+          and Michigan; 21+ in Arizona. Do not use this product to help anyone
+          under the applicable lottery age obtain tickets. We may suspend or
+          close an account if we reasonably believe the user is under 18.
         </p>
       </Section>
 

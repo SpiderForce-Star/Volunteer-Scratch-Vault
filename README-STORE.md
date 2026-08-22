@@ -1,4 +1,4 @@
-# Store launch checklist — Volunteer Scratch Vault
+# Store launch checklist — Scratch Vault
 
 Do **not** submit the app from this document. This is the human click-path
 after the native foundation is in the repo.
@@ -8,8 +8,8 @@ Native shells: Capacitor 6 + EAS Build
 Bundle id / application id: `com.webbspinnervisions.volunteerscratchvault`
 
 This product is an **independent remaining-prize information tool**.
-It is not a lottery, not a ticket seller, and not affiliated with the
-Tennessee Education Lottery Corporation. Unlocking Full Access **inside**
+It is not a lottery, not a ticket seller, and not affiliated with any
+state lottery. Unlocking Full Access **inside**
 iOS/Android uses RevenueCat + StoreKit / Play Billing. Stripe stays on
 the website only.
 
@@ -50,7 +50,7 @@ You click these. The agent does not.
 3. In [App Store Connect](https://appstoreconnect.apple.com):
    - **Apps → + → New App**
    - Platform: iOS
-   - Name: Volunteer Scratch Vault
+   - Name: Scratch Vault
    - Primary language: English (US)
    - Bundle ID: the App ID from step 2
    - SKU: `vsv-ios-001` (any unique SKU)
@@ -75,14 +75,14 @@ You click these.
 
 1. Create / open the developer account at [play.google.com/console](https://play.google.com/console).
 2. **Create app**
-   - Name: Volunteer Scratch Vault
+   - Name: Scratch Vault
    - Default language: English (United States)
    - App or game: App
    - Free or paid: Free (IAP unlocks Full Access)
    - Declarations: accept the policies you actually meet.
 3. Package name (must match): `com.webbspinnervisions.volunteerscratchvault`
 4. Store listing:
-   - Short description: Independent Tennessee scratch-off remaining-prize desk. 18+.
+   - Short description: Independent scratch-off remaining-prize desk. 18+.
    - Full description: say “highest remaining-prize heat,” never “best chance to win.”
    - Privacy policy: `https://volunteer-scratch-vault.vercel.app/privacy`
    - Terms: `https://volunteer-scratch-vault.vercel.app/terms`

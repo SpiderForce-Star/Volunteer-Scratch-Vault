@@ -5,9 +5,21 @@ import type {
   DeskReview,
   GameRole,
   HeatBand,
+  HeatContext,
   HeatReport,
   PriceFilter,
+  TonightCard,
 } from "./heat";
+
+/** Keep this inlined so Node tests can import this file without Vite aliases. */
+const DEFAULT_HEAT: HeatContext = {
+  topHoldback: 1,
+  holdbackLabel: "Play It Again",
+};
+
+function isOfficialSource(source: Game["source"]): boolean {
+  return source === "tn-remaining" || source === "official-remaining";
+}
 
 const PRICE_POINTS = [5, 10, 20, 25, 30, 50] as const;
 
@@ -45,6 +57,31 @@ function isMidPrize(game: Game, tier: PrizeTier, index: number): boolean {
   return tier.amount > 3_000 && tier.amount < game.topPrize;
 }
 
+/** Price-scaled secondary bands. Other ticket prices have no extra Medium weight. */
+export function secondaryBandForPrice(
+  price: number,
+): { min: number; max: number } | null {
+  if (price === 5) return { min: 3_000, max: 7_000 };
+  if (price === 10) return { min: 5_000, max: 10_000 };
+  if (price === 20) return { min: 10_000, max: 40_000 };
+  return null;
+}
+
+function inSecondaryBand(game: Game, tier: PrizeTier, index: number): boolean {
+  const band = secondaryBandForPrice(game.price);
+  if (!band) return false;
+  if (isTopTier(game, tier, index)) return false;
+  return tier.amount >= band.min && tier.amount <= band.max;
+}
+
+/** Remaining prizes inside the price-scaled secondary band, or null if none published. */
+export function secondaryRemaining(game: Game): number | null {
+  if (!secondaryBandForPrice(game.price)) return null;
+  const rows = game.tiers.filter((tier, i) => inSecondaryBand(game, tier, i));
+  if (!rows.length) return null;
+  return sumRemaining(rows);
+}
+
 function sumRemaining(tiers: PrizeTier[]): number | null {
   let known = false;
   let total = 0;
@@ -56,17 +93,21 @@ function sumRemaining(tiers: PrizeTier[]): number | null {
   return known ? total : null;
 }
 
-export function scoreGame(game: Game): HeatReport {
+export function scoreGame(
+  game: Game,
+  ctx: HeatContext = DEFAULT_HEAT,
+): HeatReport {
   const role = gameRole(game);
   const top = game.tiers[0];
   const topRemaining = top?.remaining ?? null;
+  const holdback = Math.max(0, ctx.topHoldback);
 
   const effectiveTop =
     topRemaining == null
       ? null
       : role === "cash-out"
         ? topRemaining
-        : Math.max(0, topRemaining - 1);
+        : Math.max(0, topRemaining - holdback);
 
   const midTiers = game.tiers.filter((tier, i) => isMidPrize(game, tier, i));
   const cashTiers = game.tiers.filter((tier, i) => {
@@ -101,6 +142,14 @@ export function scoreGame(game: Game): HeatReport {
     medium = clamp(24 + Math.min(effectiveTop, 6) * 6);
   }
 
+  const secondaryLeft = secondaryRemaining(game);
+  if (secondaryLeft != null && secondaryLeft > 0) {
+    // Dedicated lift so $5 / $10 / $20 in-band remaining is a real Medium bump
+    // (20 remaining → +17), on top of existing mid-tier scoring.
+    const boost = 8 + Math.min(secondaryLeft, 40) * 0.45;
+    medium = clamp(medium + boost);
+  }
+
   let cash = 28;
   if (lowRemaining != null) {
     cash = clamp(10 + Math.min(lowRemaining, 400) * 0.18);
@@ -108,12 +157,12 @@ export function scoreGame(game: Game): HeatReport {
     cash = clamp(16 + Math.min(topRemaining, 80) * 0.7);
   }
 
+  const secondaryGone = secondaryLeft != null && secondaryLeft <= 0;
   const bust =
     role === "jackpot" &&
     effectiveTop != null &&
     effectiveTop <= 0 &&
-    midRemaining != null &&
-    midRemaining <= 2;
+    ((midRemaining != null && midRemaining <= 2) || secondaryGone);
 
   const vault = bust ? 0 : clamp(grand * 0.28 + medium * 0.42 + cash * 0.3);
 
@@ -149,9 +198,69 @@ export function publicGame(game: Game): Game {
 }
 
 /** Guest scorer: price, top prize, and top-tier remaining only. */
-export function scoreGamePublic(game: Game): HeatReport {
-  return scoreGame(publicGame(game));
+export function scoreGamePublic(
+  game: Game,
+  ctx: HeatContext = DEFAULT_HEAT,
+): HeatReport {
+  return scoreGame(publicGame(game), ctx);
 }
+
+function hasRetailTop(heat: HeatReport): boolean {
+  if (heat.bust) return false;
+  if (heat.effectiveTop != null && heat.effectiveTop <= 0) return false;
+  return true;
+}
+
+/**
+ * Top remaining-heat games for the desk strip.
+ * Uses existing scoreGame / secondary-band remaining. Does not change odds.
+ */
+export function pickTonightHeat(
+  games: Game[],
+  reports: Map<number, HeatReport>,
+  limit = 3,
+): { cards: TonightCard[]; depleted: boolean } {
+  const rows = games.flatMap((game) => {
+    const heat = reports.get(game.number);
+    if (!heat) return [];
+    return [
+      {
+        game,
+        heat,
+        secondary: secondaryRemaining(game),
+      },
+    ];
+  });
+
+  const live = rows.filter((row) => hasRetailTop(row.heat));
+  const depleted = live.length === 0;
+  const pool = depleted ? rows : live;
+
+  pool.sort((a, b) => {
+    if (a.heat.bust !== b.heat.bust) return a.heat.bust ? 1 : -1;
+    const aTop = a.heat.effectiveTop != null && a.heat.effectiveTop > 0 ? 1 : 0;
+    const bTop = b.heat.effectiveTop != null && b.heat.effectiveTop > 0 ? 1 : 0;
+    if (aTop !== bTop) return bTop - aTop;
+    const aSec = a.secondary ?? -1;
+    const bSec = b.secondary ?? -1;
+    if (bSec !== aSec) return bSec - aSec;
+    return b.heat.vault - a.heat.vault;
+  });
+
+  const cards: TonightCard[] = pool.slice(0, Math.min(limit, pool.length)).map((row) => ({
+    number: row.game.number,
+    name: row.game.name,
+    price: row.game.price,
+    band: row.heat.band,
+    effectiveTop: row.heat.effectiveTop,
+    secondaryRemaining:
+      row.secondary != null && row.secondary > 0 ? row.secondary : null,
+  }));
+
+  return { cards, depleted };
+}
+
+export const pickTonight = pickTonightHeat;
 
 export function catalogHeat(
   games: Game[],
@@ -247,8 +356,11 @@ export function cashBlips(games: Game[], count = 12): CashBlip[] {
 export function buildDesk(
   games: Game[],
   reports: Map<number, HeatReport>,
+  ctx: HeatContext = DEFAULT_HEAT,
 ): DeskReview {
   const rows = games.map((game) => ({ game, heat: reports.get(game.number)! }));
+  const holdbackLabel = ctx.holdbackLabel;
+  const usesHoldback = ctx.topHoldback > 0 && Boolean(holdbackLabel);
 
   const why = (g: Game, h: HeatReport): string => {
     if (h.role === "cash-out" && h.topRemaining != null) {
@@ -258,7 +370,10 @@ export function buildDesk(
       return `${h.effectiveTop ?? "—"} retail top · ${h.midRemaining.toLocaleString()} mid-tier left`;
     }
     if (h.effectiveTop != null) {
-      return `${h.effectiveTop} effective top prize${h.effectiveTop === 1 ? "" : "s"} after Play It Again holdback`;
+      if (usesHoldback) {
+        return `${h.effectiveTop} effective top prize${h.effectiveTop === 1 ? "" : "s"} after ${holdbackLabel} holdback`;
+      }
+      return `${h.effectiveTop} posted top prize${h.effectiveTop === 1 ? "" : "s"} still listed`;
     }
     return "Published remaining count is thin";
   };
@@ -295,12 +410,14 @@ export function buildDesk(
       ...r,
       why:
         r.heat.effectiveTop === 0
-          ? "No retail top prize after the Play It Again holdback"
+          ? usesHoldback
+            ? `No retail top prize after the ${holdbackLabel} holdback`
+            : "No posted top prize still listed"
           : "Depleted mid-tier and jackpot",
     }));
 
   const official = rows
-    .filter((r) => r.game.source === "tn-remaining")
+    .filter((r) => isOfficialSource(r.game.source))
     .sort((a, b) => b.heat.vault - a.heat.vault)
     .map((r) => ({ ...r, why: why(r.game, r.heat) }));
 
@@ -316,7 +433,7 @@ export function buildDesk(
       ).length,
       cashOuts: rows.filter((r) => r.heat.role === "cash-out").length,
       busts: rows.filter((r) => r.heat.bust).length,
-      officialTiers: rows.filter((r) => r.game.source === "tn-remaining").length,
+      officialTiers: rows.filter((r) => isOfficialSource(r.game.source)).length,
     },
   };
 }

@@ -92,8 +92,8 @@ export function maybeNotifyDeskUpdate(isSubscriber: boolean): void {
   if (!hasUnseenDeskUpdate(true)) return;
   if (readInt(NOTIFIED_REV_KEY, 0) >= DESK_META.revision) return;
   try {
-    new Notification("Volunteer Scratch Vault", {
-      body: "New TN remaining-prize desk is ready to review.",
+    new Notification("Scratch Vault", {
+      body: "New remaining-prize desk is ready to review.",
     });
     writeInt(NOTIFIED_REV_KEY, DESK_META.revision);
   } catch {

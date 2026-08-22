@@ -1,12 +1,13 @@
-/** Canonical public origin. Change here if a custom domain goes live. */
+/** Canonical public origin. Existing Vercel URL stays live; rename the project later if needed. */
 export const SITE_ORIGIN = "https://volunteer-scratch-vault.vercel.app";
-export const SITE_NAME = "Volunteer Scratch Vault";
+export const SITE_NAME = "Scratch Vault";
+export const SITE_MARK = "SV";
 
 export const SITE_TITLE =
-  "TN scratch-off remaining prizes · Volunteer Scratch Vault";
+  "Scratch-off remaining prizes · Scratch Vault";
 
 export const SITE_DESCRIPTION =
-  "See which Tennessee scratch-offs still have cash posted at $5, $10, $20, $25, $30, and $50. Skip drained games. Independent remaining-prize desk. Counts do not improve odds. 18+.";
+  "See which scratch-offs still have cash posted at $5, $10, $20, $25, $30, and $50. Skip drained games. Independent remaining-prize desk for Tennessee and 15 other state lotteries. Counts do not improve odds. 18+ to use; Arizona Lottery tickets are 21+.";
 
 export function absoluteUrl(path: string): string {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -50,7 +51,7 @@ export const SITE_JSON_LD = {
     {
       "@type": "WebSite",
       name: SITE_NAME,
-      alternateName: "VSV",
+      alternateName: "Scratch Vault",
       url: SITE_ORIGIN,
       description: SITE_DESCRIPTION,
       inLanguage: "en-US",

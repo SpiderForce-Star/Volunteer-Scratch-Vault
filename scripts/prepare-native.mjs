@@ -45,8 +45,8 @@ writeFileSync(
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a0b" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Volunteer Scratch Vault" />
-    <title>Volunteer Scratch Vault</title>
+    <meta name="apple-mobile-web-app-title" content="Scratch Vault" />
+    <title>Scratch Vault</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     ${stylesheet}
@@ -54,13 +54,12 @@ writeFileSync(
   <body>
     <main>
       <p style="font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#6d6d76">
-        Tennessee · independent desk
+        Independent remaining-prize desk
       </p>
-      <h1 style="font-size:2rem;margin:.75rem 0 0">Volunteer Scratch Vault</h1>
+      <h1 style="font-size:2rem;margin:.75rem 0 0">Scratch Vault</h1>
       <p>
         Independent remaining-prize information. Not a lottery, not a ticket
-        seller, and not affiliated with the Tennessee Education Lottery
-        Corporation.
+        seller, and not affiliated with any state lottery.
       </p>
       <p>18+ only. Remaining counts do not improve the odds of winning any prize.</p>
       <p>

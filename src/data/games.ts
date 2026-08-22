@@ -11,6 +11,12 @@ export type TicketTheme =
   | "cash"
   | "high";
 
+export type GameSource =
+  | "tn-remaining"
+  | "official-remaining"
+  | "public-compiled"
+  | "sample";
+
 export type Game = {
   number: number;
   name: string;
@@ -18,9 +24,15 @@ export type Game = {
   topPrize: number;
   odds: number;
   tiers: PrizeTier[];
-  source: "tn-remaining" | "public-compiled";
+  source: GameSource;
   theme: TicketTheme;
+  /** Stamped by the state catalog loader. Tennessee games may omit this. */
+  stateId?: string;
 };
+
+export function isOfficialSource(source: GameSource): boolean {
+  return source === "tn-remaining" || source === "official-remaining";
+}
 
 /** Compiled from public TN remaining-prize tables + published odds (Aug 2026).
  *  If this catalog changes, bump DESK_META.revision in desk-meta.ts. */
@@ -742,8 +754,9 @@ const NAMED_FACES = new Set([
 ]);
 
 export function ticketArt(game: Game): string {
-  if (NAMED_FACES.has(game.number)) return `/tickets/${game.number}.jpg`;
-  if (game.number === 1315) return "/tickets/1370.jpg";
+  const namedOk = !game.stateId || game.stateId === "tn";
+  if (namedOk && NAMED_FACES.has(game.number)) return `/tickets/${game.number}.jpg`;
+  if (namedOk && game.number === 1315) return "/tickets/1370.jpg";
   if (game.theme === "crossword") return "/tickets/1856.jpg";
   if (game.theme === "frenzy") {
     if (game.price >= 20) return "/tickets/1360.jpg";
@@ -772,7 +785,8 @@ export function ticketArt(game: Game): string {
 }
 
 export function hasNamedFace(game: Game): boolean {
-  return NAMED_FACES.has(game.number);
+  const namedOk = !game.stateId || game.stateId === "tn";
+  return namedOk && NAMED_FACES.has(game.number);
 }
 
 export function money(n: number): string {

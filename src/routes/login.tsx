@@ -3,6 +3,7 @@ import { useState } from "react";
 import { authEnabled, GROK_PROVIDERS, signIn } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { pageHead } from "@/lib/site";
+import { useI18n } from "@/lib/locale";
 
 function safeNext(value: unknown): string {
   if (typeof value !== "string") return "/";
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { next } = Route.useSearch();
   const { user, isPending } = useCurrentUserState();
+  const { t } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,17 +38,16 @@ function LoginPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <p className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
-        Account
+        {t("login.kicker")}
       </p>
-      <h1 className="mt-3 font-display text-4xl tracking-tight">Sign in</h1>
+      <h1 className="mt-3 font-display text-4xl tracking-tight">{t("login.title")}</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        Sign in to start a 7-day trial (card required) or open a desk you already pay for.
-        Independent tool — not affiliated with the Tennessee Education Lottery.
+        {t("login.lead")}
       </p>
 
       {!authEnabled ? (
         <p className="mt-8 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-muted">
-          Sign-in is turned off in this environment.
+          {t("login.off")}
         </p>
       ) : (
         <div className="mt-8 flex flex-col gap-3">
@@ -62,15 +63,15 @@ function LoginPage() {
                   callbackURL: next || "/",
                   errorCallbackURL: "/login",
                 }).catch((err) => {
-                  setError(err instanceof Error ? err.message : "Sign-in failed.");
+                  setError(err instanceof Error ? err.message : t("login.failed"));
                   setBusy(null);
                 });
               }}
               className="inline-flex min-h-12 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
             >
               {busy === provider.providerId
-                ? "Opening…"
-                : `Continue with ${provider.label}`}
+                ? t("login.opening")
+                : t("login.continueWith", { provider: provider.label })}
             </button>
           ))}
         </div>
@@ -79,17 +80,17 @@ function LoginPage() {
       {error ? <p className="mt-4 text-sm text-bust">{error}</p> : null}
 
       <p className="mt-8 text-sm text-faint">
-        New here?{" "}
+        {t("login.new")}{" "}
         <Link to="/pricing" className="underline underline-offset-2 hover:text-fg">
-          See pricing
+          {t("login.seePricing")}
         </Link>
-        . 18+ only.{" "}
+        . {t("login.only18")}{" "}
         <Link to="/terms" className="underline underline-offset-2 hover:text-fg">
-          Terms
+          {t("footer.terms")}
         </Link>
         {" · "}
         <Link to="/privacy" className="underline underline-offset-2 hover:text-fg">
-          Privacy
+          {t("footer.privacy")}
         </Link>
         .
       </p>

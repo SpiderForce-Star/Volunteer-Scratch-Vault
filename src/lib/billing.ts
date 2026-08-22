@@ -95,14 +95,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         },
         subscription_data: {
           trial_period_days: TRIAL_PERIOD_DAYS,
+          description: "Scratch Vault Full Access",
           metadata: {
             plan: data.plan,
             userId: context.userId,
+            product: "Scratch Vault Full Access",
           },
         },
         metadata: {
           plan: data.plan,
           userId: context.userId,
+          product: "Scratch Vault Full Access",
         },
       });
 

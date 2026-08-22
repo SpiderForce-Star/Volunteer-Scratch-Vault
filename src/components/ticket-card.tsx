@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { DATA_AS_OF, money, moneyFull, postedBook, type Game } from "@/data/games";
-import { bandLabel, type HeatReport } from "@/lib/heat";
+import { type HeatReport } from "@/lib/heat";
 import { TicketFace } from "@/components/ticket-face";
+import { useActiveState } from "@/lib/active-state";
+import { useI18n } from "@/lib/locale";
+import { heatBandKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function TicketCard({
@@ -13,6 +16,8 @@ export function TicketCard({
   heat: HeatReport;
   locked?: boolean;
 }) {
+  const { stateId } = useActiveState();
+  const { t } = useI18n();
   const topLeft = heat.effectiveTop ?? heat.topRemaining;
   const midLeft = heat.midRemaining;
   const book = postedBook(game);
@@ -21,6 +26,7 @@ export function TicketCard({
     <Link
       to="/game/$number"
       params={{ number: String(game.number) }}
+      search={{ state: stateId }}
       className={cn(
         "group block overflow-hidden border bg-surface",
         "rounded-xl transition-transform duration-200",
@@ -32,7 +38,7 @@ export function TicketCard({
         <TicketFace game={game} />
         <BandChip band={heat.band} className="absolute top-3 right-3 z-10" />
         <span className="absolute top-3 left-3 z-10 rounded-sm border border-gold/50 bg-bg/80 px-2 py-1 font-mono text-[10px] tracking-[0.14em] text-gold uppercase">
-          Heat {Math.round(heat.vault)}
+          {t("heat.score", { score: Math.round(heat.vault) })}
         </span>
       </div>
 
@@ -42,14 +48,17 @@ export function TicketCard({
             {game.name}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Top {moneyFull(game.topPrize)} · printed odds 1 in {game.odds.toFixed(2)}
+            {t("odds.topPrinted", {
+              prize: moneyFull(game.topPrize),
+              odds: game.odds.toFixed(2),
+            })}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Meter label="Grand" value={heat.grand} tone="grand" />
+          <Meter label={t("heat.grandShort")} value={heat.grand} tone="grand" />
           <Meter
-            label={heat.mediumKnown ? "Medium" : "Medium (est.)"}
+            label={heat.mediumKnown ? t("heat.mediumShort") : t("heat.mediumEst")}
             value={heat.medium}
             tone="medium"
           />
@@ -57,22 +66,22 @@ export function TicketCard({
 
         <dl className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
           <div>
-            <dt className="text-faint">Top still listed</dt>
+            <dt className="text-faint">{t("card.topListed")}</dt>
             <dd className="font-mono text-sm text-fg">
               {book.topPool == null ? "—" : money(book.topPool)}
             </dd>
           </div>
           <div>
-            <dt className="text-faint">Retail tops</dt>
+            <dt className="text-faint">{t("card.retailTops")}</dt>
             <dd className="font-mono text-sm text-fg">
               {topLeft == null ? "—" : topLeft.toLocaleString()}
             </dd>
           </div>
           <div>
-            <dt className="text-faint">Mid book</dt>
+            <dt className="text-faint">{t("card.midBook")}</dt>
             <dd className="font-mono text-sm text-fg">
               {locked
-                ? "Vault"
+                ? t("card.vault")
                 : midLeft == null
                   ? "—"
                   : midLeft.toLocaleString()}
@@ -81,11 +90,11 @@ export function TicketCard({
         </dl>
 
         <p className="font-mono text-[10px] tracking-wide text-faint uppercase">
-          Updated {DATA_AS_OF}
+          {t("card.updated", { week: DATA_AS_OF })}
         </p>
         {heat.bust ? (
           <p className="text-xs text-bust">
-            Skip this one — no useful retail top left on the posted counts.
+            {t("card.skip")}
           </p>
         ) : null}
       </div>
@@ -126,6 +135,7 @@ export function BandChip({
   band: HeatReport["band"];
   className?: string;
 }) {
+  const { t } = useI18n();
   const map = {
     hot: "border border-hot/50 bg-hot-ink text-hot",
     warm: "border border-warm/50 bg-warm-ink text-warm",
@@ -140,7 +150,7 @@ export function BandChip({
         className,
       )}
     >
-      {bandLabel(band)}
+      {t(heatBandKey(band))}
     </span>
   );
 }

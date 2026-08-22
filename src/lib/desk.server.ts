@@ -1,10 +1,11 @@
-import { DESK_META } from "@/data/desk-meta";
-import { fullCatalog } from "@/data/games.full.server";
 import { money, type Game } from "@/data/games";
+import { DEFAULT_STATE_ID, getState, heatContextFor, type StateId } from "@/config/states";
+import { loadDeskCatalog } from "@/data/states/load.server";
 import {
   buildDesk,
   cashBlips,
   catalogHeat,
+  pickTonightHeat,
   publicGame,
   scoreGame,
   scoreGamePublic,
@@ -72,27 +73,43 @@ async function hasRevenueCatEntitlement(userId: string): Promise<boolean> {
 export async function buildDeskSnapshot(
   userId: string | null,
   _email: string | null,
+  stateId: StateId = DEFAULT_STATE_ID,
 ): Promise<DeskSnapshot> {
   const paid = await subscriberIsPaid(userId);
-  const games = fullCatalog();
+  const state = getState(stateId);
+  const ctx = heatContextFor(state);
+  const loaded = await loadDeskCatalog(state.id);
+  const games = loaded.games;
+  const weekLabel = loaded.weekLabel || state.weekLabel;
 
   if (paid) {
-    const reports = new Map(games.map((game) => [game.number, scoreGame(game)]));
+    const reports = new Map(games.map((game) => [game.number, scoreGame(game, ctx)]));
+    const tonight = pickTonightHeat(games, reports);
     return {
       paid: true,
-      weekLabel: DESK_META.weekLabel,
+      stateId: state.id,
+      weekLabel,
+      dataMode: state.dataMode,
+      holdback: ctx,
       gameCount: games.length,
       games,
       reports: reportRecord(reports),
-      desk: buildDesk(games, reports),
+      desk: buildDesk(games, reports, ctx),
       blips: cashBlips(games, 12),
-      stats: catalogHeat(games),
+      stats: catalogHeat(games, (game) => scoreGame(game, ctx)),
+      loadError: loaded.error,
+      stale: loaded.stale,
+      fetchedAt: loaded.fetchedAt,
+      tonight: tonight.cards,
+      tonightDepleted: tonight.depleted,
     };
   }
 
   const guestGames = games.map(publicGame);
-  const reports = new Map(guestGames.map((game) => [game.number, scoreGamePublic(game)]));
-  const desk = buildDesk(guestGames, reports);
+  const reports = new Map(
+    guestGames.map((game) => [game.number, scoreGamePublic(game, ctx)]),
+  );
+  const desk = buildDesk(guestGames, reports, ctx);
 
   const guestDesk: DeskReview = {
     ...desk,
@@ -115,14 +132,24 @@ export async function buildDeskSnapshot(
     })),
   };
 
+  const tonight = pickTonightHeat(guestGames, reports);
+
   return {
     paid: false,
-    weekLabel: DESK_META.weekLabel,
+    stateId: state.id,
+    weekLabel,
+    dataMode: state.dataMode,
+    holdback: ctx,
     gameCount: games.length,
     games: guestGames,
     reports: reportRecord(reports),
     desk: guestDesk,
     blips: cashBlips(guestGames, 12).map((blip) => ({ ...blip, remaining: null })),
-    stats: catalogHeat(guestGames, scoreGamePublic),
+    stats: catalogHeat(guestGames, (game) => scoreGamePublic(game, ctx)),
+    loadError: loaded.error,
+    stale: loaded.stale,
+    fetchedAt: loaded.fetchedAt,
+    tonight: tonight.cards,
+    tonightDepleted: tonight.depleted,
   };
 }

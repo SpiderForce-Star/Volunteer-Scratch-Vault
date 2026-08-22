@@ -5,9 +5,11 @@ import {
   isNativeApp,
   persistAgeConfirmation,
 } from "@/lib/native";
+import { useI18n } from "@/lib/locale";
 
 /** First-visit 18+ confirmation on web and in the native shells. */
 export function AgeGate() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -25,30 +27,23 @@ export function AgeGate() {
     >
       <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-2xl">
         <p className="font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-          Age confirmation
+          {t("age.kicker")}
         </p>
         <h2
           id="age-gate-title"
           className="mt-3 font-display text-2xl tracking-tight text-fg"
         >
-          You must be 18 or older to use Volunteer Scratch Vault.
+          {t("age.title")}
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          This is an independent remaining-prize information tool. It is not a
-          lottery, does not sell tickets, and is not affiliated with the
-          Tennessee Education Lottery Corporation. Remaining counts do not
-          improve the odds of winning any prize.
+          {t("age.body")}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          If gambling is a problem, call or text{" "}
+          {t("age.help")}{" "}
           <a className="underline underline-offset-2" href="tel:18005224700">
             1-800-GAMBLER
           </a>{" "}
-          or Tennessee REDLINE{" "}
-          <a className="underline underline-offset-2" href="tel:18008899789">
-            1-800-889-9789
-          </a>
-          .
+          (1-800-522-4700).
         </p>
         <div className="mt-6 flex flex-col gap-3">
           <button
@@ -59,7 +54,7 @@ export function AgeGate() {
               setOpen(false);
             }}
           >
-            I am 18 or older — continue
+            {t("age.continue")}
           </button>
           <button
             type="button"
@@ -72,7 +67,7 @@ export function AgeGate() {
               window.location.assign("https://www.ncpgambling.org/");
             }}
           >
-            I am under 18 — leave
+            {t("age.leave")}
           </button>
         </div>
       </div>

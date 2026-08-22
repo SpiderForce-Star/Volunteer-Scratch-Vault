@@ -47,13 +47,13 @@ export function InstallCoach() {
     <div className="border-b border-line bg-raised/80 px-4 py-3 sm:hidden">
       <div className="mx-auto flex max-w-6xl flex-col gap-2">
         <p className="font-mono text-[10px] tracking-[0.16em] text-gold uppercase">
-          Add VSV to your home screen
+          Add Scratch Vault to your home screen
         </p>
         {ios ? (
           <ol className="list-decimal space-y-1 pl-5 text-sm text-muted">
             <li>Tap Share</li>
             <li>Add to Home Screen</li>
-            <li>Add — then open VSV from the icon</li>
+            <li>Add — then open Scratch Vault from the icon</li>
           </ol>
         ) : (
           <p className="text-sm text-muted">
@@ -71,7 +71,7 @@ export function InstallCoach() {
                 dismiss();
               }}
             >
-              Add VSV to your home screen
+              Add Scratch Vault to your home screen
             </button>
           ) : null}
           <button
